@@ -103,7 +103,9 @@ object QueryJobResults {
       CompleteSelectJob(
         schema.fields,
         api.jobReference.location,
-        api.rows.flatMap(rows => NonEmptyList.fromList(rows.map(JobResultRow))),
+        api.rows.flatMap(rows =>
+          NonEmptyList.fromList(rows.map(JobResultRow(_)))
+        ),
         totalRows.value,
         api.pageToken,
         bytes.value,

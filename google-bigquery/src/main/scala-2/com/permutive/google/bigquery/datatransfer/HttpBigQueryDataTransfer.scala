@@ -261,7 +261,7 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
         }
         .toList
 
-    raiseIfNonEmpty(dupes, DuplicateScheduledQueryRequestException)
+    raiseIfNonEmpty(dupes, DuplicateScheduledQueryRequestException(_))
   }
 
   private def raiseIfNonEmpty[T](

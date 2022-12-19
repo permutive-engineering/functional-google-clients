@@ -10,9 +10,6 @@ ThisBuild / developers := List(
   tlGitHubDev("janstenpickle", "Chris Jansen")
 )
 
-// Jsoniter is only built against Java 11
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
-
 // publish to s01.oss.sonatype.org (set to true to publish to oss.sonatype.org instead)
 ThisBuild / tlSonatypeUseLegacyHost := true
 
@@ -114,7 +111,7 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("google-bigquery"))
   .settings(
-    name := "google-auth",
+    name := "google-bigquery",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % Cats,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
@@ -138,6 +135,14 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
           "org.typelevel" %%% "discipline-munit" % "1.0.9" % Test,
           "com.github.alexarchambault" %%% "scalacheck-shapeless_1.15" % "1.3.0" % Test
         )
+    },
+    publish := {
+      if (tlIsScala3.value) ()
+      else publish.value
+    },
+    publishLocal := {
+      if (tlIsScala3.value) ()
+      else publishLocal.value
     }
   )
   .dependsOn(googleAuth)

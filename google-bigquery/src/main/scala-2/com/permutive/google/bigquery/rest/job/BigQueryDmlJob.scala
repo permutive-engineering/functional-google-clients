@@ -17,7 +17,7 @@
 package com.permutive.google.bigquery.rest.job
 
 import cats.syntax.all._
-import cats.{Applicative, MonadError}
+import cats.{Applicative, MonadThrow}
 import cats.data.NonEmptyList
 import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.rest.models.Exceptions._
@@ -46,12 +46,11 @@ object BigQueryDmlJob {
 
   def apply[F[_]: BigQueryDmlJob]: BigQueryDmlJob[F] = implicitly
 
-  def create[F[_]: BigQueryJob: MonadError[*[_], Throwable]]
-      : F[BigQueryDmlJob[F]] =
+  def create[F[_]: BigQueryJob: MonadThrow]: F[BigQueryDmlJob[F]] =
     Applicative[F].pure(impl)
 
   def impl[F[_]: BigQueryJob](implicit
-      F: MonadError[F, Throwable]
+      F: MonadThrow[F]
   ): BigQueryDmlJob[F] =
     new BigQueryDmlJob[F] {
 
