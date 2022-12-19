@@ -22,7 +22,6 @@ import com.permutive.google.auth.oauth.Constants
 import com.permutive.google.auth.oauth.models.ServiceAccountAccessToken
 import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import com.permutive.google.auth.oauth.utils.HttpUtils
-import io.scalaland.chimney.dsl._
 import org.http4s.Method.GET
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
@@ -43,7 +42,12 @@ class GoogleInstanceMetadataOAuth[F[_]: Async: Logger](
 
   final private[this] val apiToServiceToken
       : AccessTokenApi => ServiceAccountAccessToken =
-    _.into[ServiceAccountAccessToken].transform
+    token =>
+      ServiceAccountAccessToken(
+        token.accessToken,
+        token.tokenType,
+        token.expiresIn
+      )
 
   override def authenticate: F[Option[ServiceAccountAccessToken]] =
     HttpUtils

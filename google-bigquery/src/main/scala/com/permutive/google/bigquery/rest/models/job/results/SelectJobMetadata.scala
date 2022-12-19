@@ -21,7 +21,6 @@ import com.permutive.google.bigquery.models.NewTypes.Location
 import com.permutive.google.bigquery.models.table.Field
 import com.permutive.google.bigquery.rest.models.Cost
 import com.permutive.google.bigquery.rest.models.job.JobError
-import io.scalaland.chimney.dsl._
 
 case class SelectJobMetadata(
     schema: NonEmptyList[Field],
@@ -38,6 +37,14 @@ object SelectJobMetadata {
   def fromCompleteSelectJob(
       completeSelectJob: CompleteSelectJob
   ): SelectJobMetadata =
-    completeSelectJob.transformInto[SelectJobMetadata]
+    SelectJobMetadata(
+      completeSelectJob.schema,
+      completeSelectJob.totalRows,
+      completeSelectJob.location,
+      completeSelectJob.totalBytesProcessed,
+      completeSelectJob.cost,
+      completeSelectJob.cacheHit,
+      completeSelectJob.errors
+    )
 
 }

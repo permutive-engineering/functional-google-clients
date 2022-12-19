@@ -24,7 +24,6 @@ import com.permutive.google.auth.oauth.models.UserAccountAccessToken
 import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import com.permutive.google.auth.oauth.user.models.NewTypes._
 import com.permutive.google.auth.oauth.utils.HttpUtils
-import io.scalaland.chimney.dsl._
 import org.http4s.Method.POST
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
@@ -44,7 +43,12 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 
   final private[this] val apiToUserToken
       : AccessTokenApi => UserAccountAccessToken =
-    _.into[UserAccountAccessToken].transform
+    token =>
+      UserAccountAccessToken(
+        token.accessToken,
+        token.tokenType,
+        token.expiresIn
+      )
 
   override def authenticate(
       clientId: ClientId,

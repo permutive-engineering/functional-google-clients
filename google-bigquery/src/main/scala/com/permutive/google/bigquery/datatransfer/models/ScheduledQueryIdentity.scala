@@ -18,7 +18,6 @@ package com.permutive.google.bigquery.datatransfer.models
 
 import com.permutive.google.bigquery.datatransfer.models.NewTypes.DisplayName
 import com.permutive.google.bigquery.models.NewTypes.DatasetId
-import io.scalaland.chimney.dsl._
 
 case class ScheduledQueryIdentity(
     displayName: DisplayName,
@@ -29,9 +28,9 @@ object ScheduledQueryIdentity {
   def fromScheduleQueryRequest(
       sqr: ScheduleQueryRequest
   ): ScheduledQueryIdentity =
-    sqr.into[ScheduledQueryIdentity].transform
+    ScheduledQueryIdentity(sqr.displayName, sqr.destinationDataset)
 
   def fromScheduledQuery(sq: ScheduledQuery): ScheduledQueryIdentity =
-    sq.into[ScheduledQueryIdentity].transform
+    ScheduledQueryIdentity(sq.displayName, sq.destinationDataset)
 
 }

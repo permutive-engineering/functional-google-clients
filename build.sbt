@@ -69,7 +69,6 @@ lazy val googleAuth = crossProject(JVMPlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % Cats,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
-      "io.scalaland" %%% "chimney" % Chimney,
       "io.circe" %%% "circe-generic" % Circe,
       "io.circe" %%% "circe-fs2" % "0.14.0",
       "org.http4s" %%% "http4s-client" % Http4s,
@@ -119,7 +118,6 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % Cats,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
-      "io.scalaland" %%% "chimney" % Chimney,
       "io.circe" %%% "circe-generic" % Circe,
       "com.beachape" %%% "enumeratum-circe" % "1.7.2",
       "org.http4s" %%% "http4s-client" % Http4s,
