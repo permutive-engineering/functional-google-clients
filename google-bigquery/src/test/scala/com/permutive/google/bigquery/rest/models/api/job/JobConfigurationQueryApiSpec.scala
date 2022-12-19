@@ -9,29 +9,23 @@ import com.permutive.testutils.{ResourceSupport, ResourceSupportMatchers}
 import io.circe.Error
 import io.circe.parser.parse
 import io.circe.syntax._
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
 class JobConfigurationQueryApiSpec
-    extends AnyFlatSpec
-    with Matchers
-    with TableDrivenPropertyChecks
-    with TypeCheckedTripleEquals
+    extends FunSuite
     with ResourceSupport
     with ResourceSupportMatchers {
 
   override val packageName = Some("google-bigquery")
 
-  behavior.of("JobConfigurationQueryApi.decode")
-
-  private def decodeJobConfigurationQueryApi(s: String): JobConfigurationQueryApi = {
+  private def decodeJobConfigurationQueryApi(
+      s: String
+  ): JobConfigurationQueryApi = {
     val test: Either[Error, JobConfigurationQueryApi] =
       parse(s)
         .flatMap(_.as[JobConfigurationQueryApi])
 
-    test shouldBe Symbol("right")
+    assert(test.isRight)
     val Right(result: JobConfigurationQueryApi) = test
 
     result
@@ -40,47 +34,48 @@ class JobConfigurationQueryApiSpec
   private[this] val tableReference = TableReferenceApi(
     BigQueryProjectName("foo"),
     DatasetId("bar"),
-    TableId("baz"),
+    TableId("baz")
   )
 
-  it should "decode a JobConfigurationQueryWriteTableApi where possible" in {
+  test("decode a JobConfigurationQueryWriteTableApi where possible") {
     val writeDisp = WriteDisposition.WriteTruncate
     val json =
       s"""{"query": "foo", "useLegacySql": false, "writeDisposition": "${writeDisp.entryName}", "destinationTable": ${tableReference.asJson}}"""
 
-    val result  = decodeJobConfigurationQueryApi(json)
+    val result = decodeJobConfigurationQueryApi(json)
     val coerced = result.asInstanceOf[JobConfigurationQueryWriteTableApi]
 
-    coerced.writeDisposition should ===(writeDisp)
-    coerced.destinationTable should ===(tableReference)
+    assertEquals(coerced.writeDisposition, writeDisp)
+    assertEquals(coerced.destinationTable, tableReference)
   }
 
   val writeDisp = WriteDisposition.WriteTruncate
 
-  val basicWriteJson: TableFor1[String] = Table(
-    "json",
+  val basicWriteJson = List(
     s"""{"query": "foo", "useLegacySql": false, "INVALID": "${writeDisp.entryName}", "destinationTable": ${tableReference.asJson}}""",
-    s"""{"query": "foo", "useLegacySql": false}""",
+    s"""{"query": "foo", "useLegacySql": false}"""
   )
 
-  it should "fallback to decoding a JobConfigurationQueryBasicApi" in {
-    forAll(basicWriteJson) { s =>
-      val result  = decodeJobConfigurationQueryApi(s)
+  test("fallback to decoding a JobConfigurationQueryBasicApi") {
+    basicWriteJson.foreach { s =>
+      val result = decodeJobConfigurationQueryApi(s)
       val coerced = result.asInstanceOf[JobConfigurationQueryBasicApi]
 
-      coerced.useLegacySql should ===(false)
+      assertEquals(coerced.useLegacySql, false)
     }
   }
 
-  behavior.of("JobConfigurationQueryApi")
-
   val writeTableFilePath = "JobConfigurationQueryWriteTableApi.json"
 
-  it should "encode and decode between JSON properly when it is a JobConfigurationQueryWriteTableApi" in {
+  test(
+    "encode and decode between JSON properly when it is a JobConfigurationQueryWriteTableApi"
+  ) {
     checkEncodeDecode(writeTableFilePath, jobQueryConfigWriteTableApi)
   }
 
-  it should "encode and decode between JSON properly when it is generic but a JobConfigurationQueryWriteTableApi" in {
+  test(
+    "encode and decode between JSON properly when it is generic but a JobConfigurationQueryWriteTableApi"
+  ) {
     val obj: JobConfigurationQueryApi = jobQueryConfigWriteTableApi
 
     checkEncodeDecode(writeTableFilePath, obj)
@@ -88,17 +83,23 @@ class JobConfigurationQueryApiSpec
 
   val basicFilePath = "JobConfigurationQueryBasicApi.json"
 
-  it should "encode and decode between JSON properly when it is a JobConfigurationQueryBasicApi" in {
+  test(
+    "encode and decode between JSON properly when it is a JobConfigurationQueryBasicApi"
+  ) {
     checkEncodeDecode(basicFilePath, jobQueryConfigBasicApi)
   }
 
-  it should "encode and decode between JSON properly when it is generic but a JobConfigurationQueryBasicApi" in {
+  test(
+    "encode and decode between JSON properly when it is generic but a JobConfigurationQueryBasicApi"
+  ) {
     val obj: JobConfigurationQueryApi = jobQueryConfigBasicApi
 
     checkEncodeDecode(basicFilePath, obj)
   }
 
-  it should "encode and decode between JSON properly when it is a query with parameters" in {
+  test(
+    "encode and decode between JSON properly when it is a query with parameters"
+  ) {
     val queryWithParametersPath = "QueryWithParameters.json"
     checkEncodeDecode(queryWithParametersPath, queryWithParameters)
   }

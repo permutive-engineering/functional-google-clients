@@ -120,8 +120,13 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
       "org.http4s" %%% "http4s-dsl" % Http4s,
       "org.typelevel" %%% "log4cats-slf4j" % "2.5.0",
       "org.typelevel" %%% "cats-effect" % CatsEffect % Test,
+      "org.typelevel" %%% "cats-laws" % Cats % Test,
+      "io.circe" %%% "circe-literal" % Circe % Test,
+      "io.circe" %%% "circe-parser" % Circe % Test,
       "org.scalameta" %%% "munit" % Munit % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % MunitCE3 % Test
+      "org.typelevel" %%% "munit-cats-effect-3" % MunitCE3 % Test,
+      "org.typelevel" %%% "discipline-munit" % "1.0.9" % Test,
+      "com.github.alexarchambault" %%% "scalacheck-shapeless_1.15" % "1.3.0" % Test
     )
   )
   .dependsOn(googleAuth)

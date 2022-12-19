@@ -6,66 +6,72 @@ import cats.syntax.all._
 import cats.{Foldable, Functor}
 import com.permutive.google.bigquery.models.SQLType
 import com.permutive.google.bigquery.rest.models.ArbitraryInstances
+import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.Assertion
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import org.scalacheck.Prop.forAll
 
-class ParameterEncoderSpec
-    extends AnyFlatSpec
-    with Matchers
-    with TypeCheckedTripleEquals
-    with ScalaCheckDrivenPropertyChecks
-    with ArbitraryInstances {
+class ParameterEncoderSpec extends ScalaCheckSuite with ArbitraryInstances {
 
-  behavior.of("ParameterEncoder.intParameterEncoder")
-
-  it should "properly encode all Int" in {
+  property("properly encode all Int") {
     forAll { i: Int =>
-      ParameterEncoder[Int].`type` should ===(QueryParameterType(SQLType.Int64, None, None))
-      ParameterEncoder[Int].value(i) should ===(QueryParameterValue(Some(i.toString), None, None))
+      assertEquals(
+        ParameterEncoder[Int].`type`,
+        QueryParameterType(SQLType.Int64, None, None)
+      )
+      assertEquals(
+        ParameterEncoder[Int].value(i),
+        QueryParameterValue(Some(i.toString), None, None)
+      )
     }
   }
 
-  behavior.of("ParameterEncoder.stringParameterEncoder")
-
-  it should "properly encode all String" in {
+  property("properly encode all String") {
     forAll { i: String =>
-      ParameterEncoder[String].`type` should ===(QueryParameterType(SQLType.String, None, None))
-      ParameterEncoder[String].value(i) should ===(QueryParameterValue(Some(i), None, None))
+      assertEquals(
+        ParameterEncoder[String].`type`,
+        QueryParameterType(SQLType.String, None, None)
+      )
+      assertEquals(
+        ParameterEncoder[String].value(i),
+        QueryParameterValue(Some(i), None, None)
+      )
     }
   }
 
-  behavior.of("ParameterEncoder.doubleParameterEncoder")
-
-  it should "properly encode all Double" in {
+  property("properly encode all Double") {
     forAll { i: Double =>
-      ParameterEncoder[Double].`type` should ===(QueryParameterType(SQLType.Float64, None, None))
-      ParameterEncoder[Double].value(i) should ===(QueryParameterValue(Some(i.toString), None, None))
+      assertEquals(
+        ParameterEncoder[Double].`type`,
+        QueryParameterType(SQLType.Float64, None, None)
+      )
+      assertEquals(
+        ParameterEncoder[Double].value(i),
+        QueryParameterValue(Some(i.toString), None, None)
+      )
     }
   }
 
-  behavior.of("ParameterEncoder.booleanParameterEncoder")
-
-  it should "properly encode all Boolean" in {
+  property("properly encode all Boolean") {
     forAll { i: Boolean =>
-      ParameterEncoder[Boolean].`type` should ===(QueryParameterType(SQLType.Boolean, None, None))
-      ParameterEncoder[Boolean].value(i) should ===(QueryParameterValue(Some(i.toString), None, None))
+      assertEquals(
+        ParameterEncoder[Boolean].`type`,
+        QueryParameterType(SQLType.Boolean, None, None)
+      )
+      assertEquals(
+        ParameterEncoder[Boolean].value(i),
+        QueryParameterValue(Some(i.toString), None, None)
+      )
     }
   }
-
-  behavior.of("ParameterEncoder.foldableParameterEncoder")
 
   def runTestArray[F[_]: Functor: Foldable, A: ParameterEncoder](
-    parameterEncoder: ParameterEncoder[F[A]],
-  )(implicit arb: Arbitrary[F[A]]): Assertion = {
+      parameterEncoder: ParameterEncoder[F[A]]
+  )(implicit arb: Arbitrary[F[A]]) = {
     val expectedType =
       QueryParameterType(
         SQLType.Array,
         Some(ParameterEncoder[A].`type`),
-        None,
+        None
       )
 
     forAll { as: F[A] =>
@@ -73,59 +79,61 @@ class ParameterEncoderSpec
         QueryParameterValue(
           None,
           Some(as.map(ParameterEncoder[A].value).toList),
-          None,
+          None
         )
 
-      parameterEncoder.`type` should ===(expectedType)
-      parameterEncoder.value(as) should ===(expectedValue)
+      assertEquals(parameterEncoder.`type`, expectedType)
+      assertEquals(parameterEncoder.value(as), expectedValue)
     }
   }
 
-  def testArray[F[_]: Foldable: Functor, A: ParameterEncoder](implicit arb: Arbitrary[F[A]]): Assertion =
+  def testArray[F[_]: Foldable: Functor, A: ParameterEncoder](implicit
+      arb: Arbitrary[F[A]]
+  ) =
     runTestArray[F, A](implicitly)
 
-  def testList[A: ParameterEncoder](implicit arb: Arbitrary[List[A]]): Assertion =
+  def testList[A: ParameterEncoder](implicit
+      arb: Arbitrary[List[A]]
+  ) =
     runTestArray[List, A](ParameterEncoder.listParameterEncoder)
 
-  it should "properly encode all List[String]" in {
+  property("properly encode all List[String]") {
     testArray[List, String]
     testList[String]
   }
 
-  it should "properly encode all NonEmptyList[String]" in {
+  property("properly encode all NonEmptyList[String]") {
     testArray[NonEmptyList, String]
   }
 
-  it should "properly encode all Chain[Int]" in {
+  property("properly encode all Chain[Int]") {
     testArray[Chain, Int]
   }
 
   // Possibly undesired?
-  it should "properly encode all Option[String]" in {
+  property("properly encode all Option[String]") {
     testArray[Option, String]
   }
 
-  it should "properly encode all NonEmptyChain[Boolean]" in {
+  property("properly encode all NonEmptyChain[Boolean]") {
     testArray[NonEmptyChain, Boolean]
   }
 
-  behavior.of("ParameterEncoder.deriveEncoder")
-
   def testCaseClass[A: Arbitrary: ParameterEncoder](
-    expectedType: QueryParameterType,
-    expectedStructValues: A => ListMapLike[String, QueryParameterValue],
-  ): Assertion =
+      expectedType: QueryParameterType,
+      expectedStructValues: A => ListMapLike[String, QueryParameterValue]
+  ) =
     forAll { a: A =>
-      ParameterEncoder[A].`type` should ===(expectedType)
+      assertEquals(ParameterEncoder[A].`type`, expectedType)
 
       val expectedQueryParameterValue =
         QueryParameterValue(
           None,
           None,
-          Some(expectedStructValues(a)),
+          Some(expectedStructValues(a))
         )
 
-      ParameterEncoder[A].value(a) should ===(expectedQueryParameterValue)
+      assertEquals(ParameterEncoder[A].value(a), expectedQueryParameterValue)
     }
 
   val expectedSimplCaseClassType =
@@ -136,47 +144,62 @@ class ParameterEncoderSpec
         List(
           StructType(
             Some("foo"),
-            QueryParameterType.singular(SQLType.String),
+            QueryParameterType.singular(SQLType.String)
           ),
           StructType(
             Some("bar"),
-            QueryParameterType.singular(SQLType.String),
+            QueryParameterType.singular(SQLType.String)
           ),
           StructType(
             Some("baz"),
-            QueryParameterType.singular(SQLType.Int64),
+            QueryParameterType.singular(SQLType.Int64)
           ),
           StructType(
             Some("qux"),
-            QueryParameterType.singular(SQLType.Float64),
+            QueryParameterType.singular(SQLType.Float64)
           ),
           StructType(
             Some("blib"),
-            QueryParameterType.singular(SQLType.Boolean),
-          ),
-        ),
-      ),
+            QueryParameterType.singular(SQLType.Boolean)
+          )
+        )
+      )
     )
 
-  def expectedSimpleQueryParameterValues(simple: SimpleCaseClass): ListMapLike[String, QueryParameterValue] =
+  def expectedSimpleQueryParameterValues(
+      simple: SimpleCaseClass
+  ): ListMapLike[String, QueryParameterValue] =
     ListMapLike(
       List(
-        "foo"  -> QueryParameterValue(value = Some(simple.foo), None, None),
-        "bar"  -> QueryParameterValue(value = Some(simple.bar), None, None),
-        "baz"  -> QueryParameterValue(value = Some(simple.baz.toString), None, None),
-        "qux"  -> QueryParameterValue(value = Some(simple.qux.toString), None, None),
-        "blib" -> QueryParameterValue(value = Some(simple.blib.toString), None, None),
-      ),
+        "foo" -> QueryParameterValue(value = Some(simple.foo), None, None),
+        "bar" -> QueryParameterValue(value = Some(simple.bar), None, None),
+        "baz" -> QueryParameterValue(
+          value = Some(simple.baz.toString),
+          None,
+          None
+        ),
+        "qux" -> QueryParameterValue(
+          value = Some(simple.qux.toString),
+          None,
+          None
+        ),
+        "blib" -> QueryParameterValue(
+          value = Some(simple.blib.toString),
+          None,
+          None
+        )
+      )
     )
 
-  it should "properly encode for all SimpleCaseClass" in {
+  test("properly encode for all SimpleCaseClass") {
     testCaseClass[SimpleCaseClass](
       expectedSimplCaseClassType,
-      expectedSimpleQueryParameterValues,
+      expectedSimpleQueryParameterValues
     )
   }
 
-  implicit val parameterEncoderArrayCaseClass: ParameterEncoder[ArrayCaseClass] = ParameterEncoder.deriveEncoder
+  implicit val parameterEncoderArrayCaseClass
+      : ParameterEncoder[ArrayCaseClass] = ParameterEncoder.deriveEncoder
 
   val expectedArrayCaseClassType =
     QueryParameterType(
@@ -189,37 +212,41 @@ class ParameterEncoderSpec
             QueryParameterType(
               SQLType.String,
               None,
-              None,
-            ),
+              None
+            )
           ),
           StructType(
             Some("bar"),
             QueryParameterType(
               SQLType.Array,
               Some(QueryParameterType(SQLType.String, None, None)),
-              None,
-            ),
-          ),
-        ),
-      ),
+              None
+            )
+          )
+        )
+      )
     )
 
-  def expectedArrayCaseClassValues(array: ArrayCaseClass): ListMapLike[String, QueryParameterValue] =
+  def expectedArrayCaseClassValues(
+      array: ArrayCaseClass
+  ): ListMapLike[String, QueryParameterValue] =
     ListMapLike(
       List(
         "foo" -> QueryParameterValue(value = Some(array.foo), None, None),
         "bar" -> QueryParameterValue(
           None,
-          Some(array.bar.map(s => QueryParameterValue(value = Some(s), None, None))),
-          None,
-        ),
-      ),
+          Some(
+            array.bar.map(s => QueryParameterValue(value = Some(s), None, None))
+          ),
+          None
+        )
+      )
     )
 
-  it should "properly encode for all ArrayCaseClass" in {
+  property("properly encode for all ArrayCaseClass") {
     testCaseClass[ArrayCaseClass](
       expectedArrayCaseClassType,
-      expectedArrayCaseClassValues,
+      expectedArrayCaseClassValues
     )
   }
 
@@ -237,17 +264,19 @@ class ParameterEncoderSpec
                 QueryParameterType(
                   SQLType.Array,
                   Some(QueryParameterType(SQLType.Int64, None, None)),
-                  None,
-                ),
+                  None
+                )
               ),
-              None,
-            ),
-          ),
-        ),
-      ),
+              None
+            )
+          )
+        )
+      )
     )
 
-  def expectedArrayArrayCaseClassValues(array: ArrayArrayCaseClass): ListMapLike[String, QueryParameterValue] =
+  def expectedArrayArrayCaseClassValues(
+      array: ArrayArrayCaseClass
+  ): ListMapLike[String, QueryParameterValue] =
     ListMapLike(
       List(
         "foo" -> QueryParameterValue(
@@ -256,20 +285,24 @@ class ParameterEncoderSpec
             array.foo.map(is =>
               QueryParameterValue(
                 None,
-                Some(is.map(i => QueryParameterValue(value = Some(i.toString), None, None))),
-                None,
-              ),
-            ),
+                Some(
+                  is.map(i =>
+                    QueryParameterValue(value = Some(i.toString), None, None)
+                  )
+                ),
+                None
+              )
+            )
           ),
-          None,
-        ),
-      ),
+          None
+        )
+      )
     )
 
-  it should "properly encode for all ArrayArrayCaseClass" in {
+  property("properly encode for all ArrayArrayCaseClass") {
     testCaseClass[ArrayArrayCaseClass](
       expectedArrayArrayCaseClassType,
-      expectedArrayArrayCaseClassValues,
+      expectedArrayArrayCaseClassValues
     )
   }
 
@@ -284,34 +317,44 @@ class ParameterEncoderSpec
             QueryParameterType(
               SQLType.Int64,
               None,
-              None,
-            ),
+              None
+            )
           ),
           StructType(
             Some("bar"),
-            expectedSimplCaseClassType,
+            expectedSimplCaseClassType
           ),
           StructType(
             Some("baz"),
-            expectedArrayCaseClassType,
-          ),
-        ),
-      ),
+            expectedArrayCaseClassType
+          )
+        )
+      )
     )
 
-  def expectedNestedCaseClassValues(nested: NestedCaseClass): ListMapLike[String, QueryParameterValue] =
+  def expectedNestedCaseClassValues(
+      nested: NestedCaseClass
+  ): ListMapLike[String, QueryParameterValue] =
     ListMapLike(
       List(
         "foo" -> QueryParameterValue(Some(nested.foo.toString), None, None),
-        "bar" -> QueryParameterValue(None, None, Some(expectedSimpleQueryParameterValues(nested.bar))),
-        "baz" -> QueryParameterValue(None, None, Some(expectedArrayCaseClassValues(nested.baz))),
-      ),
+        "bar" -> QueryParameterValue(
+          None,
+          None,
+          Some(expectedSimpleQueryParameterValues(nested.bar))
+        ),
+        "baz" -> QueryParameterValue(
+          None,
+          None,
+          Some(expectedArrayCaseClassValues(nested.baz))
+        )
+      )
     )
 
-  it should "properly encode for all NestedCaseClass" in {
+  property("properly encode for all NestedCaseClass") {
     testCaseClass[NestedCaseClass](
       expectedNestedCaseClassType,
-      expectedNestedCaseClassValues,
+      expectedNestedCaseClassValues
     )
   }
 

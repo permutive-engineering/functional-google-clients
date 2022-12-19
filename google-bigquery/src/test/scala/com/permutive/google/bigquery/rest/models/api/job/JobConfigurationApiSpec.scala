@@ -5,177 +5,195 @@ import com.permutive.testutils.{ResourceSupport, ResourceSupportMatchers}
 import io.circe.Error
 import io.circe.parser.parse
 import io.circe.syntax._
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
 class JobConfigurationApiSpec
-    extends AnyFlatSpec
-    with Matchers
-    with TableDrivenPropertyChecks
-    with TypeCheckedTripleEquals
+    extends FunSuite
     with ResourceSupport
     with ResourceSupportMatchers {
 
   override val packageName = Some("google-bigquery")
-
-  behavior.of("JobConfigurationApi.decode")
 
   private def decodeJobConfigurationApi(s: String): JobConfigurationApi = {
     val test: Either[Error, JobConfigurationApi] =
       parse(s)
         .flatMap(_.as[JobConfigurationApi])
 
-    test shouldBe Symbol("right")
+    assert(test.isRight)
     val Right(result: JobConfigurationApi) = test
 
     result
   }
 
-  val validBasicQueries: TableFor1[String] = Table(
-    "json",
+  val validBasicQueries = List(
     s"""{"jobType": "Query", "query": ${jobQueryConfigBasicApi.asJson}}""",
     s"""{"jobType": "QUERY", "query": ${jobQueryConfigBasicApi.asJson}}""",
     s"""{"jobType": "QuERy", "query": ${jobQueryConfigBasicApi.asJson}}""",
-    s"""{"jobType": "query", "query": ${jobQueryConfigBasicApi.asJson}}""",
+    s"""{"jobType": "query", "query": ${jobQueryConfigBasicApi.asJson}}"""
   )
 
-  it should "successfully decode a basic Query regardless of case" in {
-    forEvery(validBasicQueries) { s =>
+  test("successfully decode a basic Query regardless of case") {
+    validBasicQueries.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Query] should ===(jobConfigurationQueryBasicNoDryRun)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Query],
+        jobConfigurationQueryBasicNoDryRun
+      )
     }
   }
 
-  val validWroteTableQueries: TableFor1[String] = Table(
-    "json",
+  val validWroteTableQueries = List(
     s"""{"jobType": "Query", "query": ${jobQueryConfigWriteTableApi.asJson}}""",
     s"""{"jobType": "QUERY", "query": ${jobQueryConfigWriteTableApi.asJson}}""",
     s"""{"jobType": "QuERy", "query": ${jobQueryConfigWriteTableApi.asJson}}""",
-    s"""{"jobType": "query", "query": ${jobQueryConfigWriteTableApi.asJson}}""",
+    s"""{"jobType": "query", "query": ${jobQueryConfigWriteTableApi.asJson}}"""
   )
 
-  it should "successfully decode a write table Query regardless of case" in {
-    forEvery(validWroteTableQueries) { s =>
+  test("successfully decode a write table Query regardless of case") {
+    validWroteTableQueries.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Query] should ===(jobConfigurationApiQueryWriteTable)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Query],
+        jobConfigurationApiQueryWriteTable
+      )
     }
   }
 
-  it should "encode and decode a basic Query between JSON (no dry run)" in {
-    checkEncodeDecode("JobConfigurationApi#Query-basic.Json", jobConfigurationQueryBasicNoDryRun: JobConfigurationApi)
+  test("encode and decode a basic Query between JSON (no dry run)") {
+    checkEncodeDecode(
+      "JobConfigurationApi#Query-basic.Json",
+      jobConfigurationQueryBasicNoDryRun: JobConfigurationApi
+    )
   }
 
-  it should "encode and decode a basic Query between JSON (dry run)" in {
+  test("encode and decode a basic Query between JSON (dry run)") {
     checkEncodeDecode(
       "JobConfigurationApi#Query-basic-dry-run.Json",
-      jobConfigurationQueryBasicDryRun: JobConfigurationApi,
+      jobConfigurationQueryBasicDryRun: JobConfigurationApi
     )
   }
 
-  it should "encode and decode a write table Query between JSON" in {
+  test("encode and decode a write table Query between JSON") {
     checkEncodeDecode(
       "JobConfigurationApi#Query-write-table.Json",
-      jobConfigurationApiQueryWriteTable: JobConfigurationApi,
+      jobConfigurationApiQueryWriteTable: JobConfigurationApi
     )
   }
 
-  val validCopies: TableFor1[String] = Table(
-    "json",
+  val validCopies = List(
     """{"jobType": "Copy"}""",
     """{"jobType": "COPY"}""",
     """{"jobType": "CoPY"}""",
-    """{"jobType": "copy"}""",
+    """{"jobType": "copy"}"""
   )
 
-  it should "successfully decode a Copy regardless of case" in {
-    forEvery(validCopies) { s =>
+  test("successfully decode a Copy regardless of case") {
+    validCopies.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Copy.type] should ===(JobConfigurationApi.Copy)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Copy.type],
+        JobConfigurationApi.Copy
+      )
     }
   }
 
-  it should "encode and decode a Copy between JSON" in {
-    checkEncodeDecode("JobConfigurationApi#Copy.Json", JobConfigurationApi.Copy: JobConfigurationApi)
+  test("encode and decode a Copy between JSON") {
+    checkEncodeDecode(
+      "JobConfigurationApi#Copy.Json",
+      JobConfigurationApi.Copy: JobConfigurationApi
+    )
   }
 
-  val validExtracts: TableFor1[String] = Table(
-    "json",
+  val validExtracts = List(
     """{"jobType": "Extract"}""",
     """{"jobType": "EXTRACT"}""",
-    """{"jobType": "extract"}""",
+    """{"jobType": "extract"}"""
   )
 
-  it should "successfully decode an Extract regardless of case" in {
-    forEvery(validExtracts) { s =>
+  test("successfully decode an Extract regardless of case") {
+    validExtracts.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Extract.type] should ===(JobConfigurationApi.Extract)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Extract.type],
+        JobConfigurationApi.Extract
+      )
     }
   }
 
-  it should "encode and decode an Extract between JSON" in {
-    checkEncodeDecode("JobConfigurationApi#Extract.Json", JobConfigurationApi.Extract: JobConfigurationApi)
+  test("encode and decode an Extract between JSON") {
+    checkEncodeDecode(
+      "JobConfigurationApi#Extract.Json",
+      JobConfigurationApi.Extract: JobConfigurationApi
+    )
   }
 
-  val validLoads: TableFor1[String] = Table(
-    "json",
+  val validLoads = List(
     """{"jobType": "Load"}""",
     """{"jobType": "LOAD"}""",
-    """{"jobType": "load"}""",
+    """{"jobType": "load"}"""
   )
 
-  it should "successfully decode a Load regardless of case" in {
-    forEvery(validLoads) { s =>
+  test("successfully decode a Load regardless of case") {
+    validLoads.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Load.type] should ===(JobConfigurationApi.Load)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Load.type],
+        JobConfigurationApi.Load
+      )
     }
   }
 
-  it should "encode and decode a Load between JSON" in {
-    checkEncodeDecode("JobConfigurationApi#Load.Json", JobConfigurationApi.Load: JobConfigurationApi)
+  test("encode and decode a Load between JSON") {
+    checkEncodeDecode(
+      "JobConfigurationApi#Load.Json",
+      JobConfigurationApi.Load: JobConfigurationApi
+    )
   }
 
-  val validUnknowns: TableFor1[String] = Table(
-    "json",
+  val validUnknowns = List(
     """{"jobType": "Unknown"}""",
     """{"jobType": "UNKNOWN"}""",
-    """{"jobType": "unknown"}""",
+    """{"jobType": "unknown"}"""
   )
 
-  it should "successfully decode an Unknown regardless of case" in {
-    forEvery(validUnknowns) { s =>
+  test("successfully decode an Unknown regardless of case") {
+    validUnknowns.foreach { s =>
       val result = decodeJobConfigurationApi(s)
 
-      result.asInstanceOf[JobConfigurationApi.Unknown.type] should ===(JobConfigurationApi.Unknown)
+      assertEquals(
+        result.asInstanceOf[JobConfigurationApi.Unknown.type],
+        JobConfigurationApi.Unknown
+      )
     }
   }
 
-  it should "encode and decode an Unknown between JSON" in {
-    checkEncodeDecode("JobConfigurationApi#Unknown.Json", JobConfigurationApi.Unknown: JobConfigurationApi)
+  test("encode and decode an Unknown between JSON") {
+    checkEncodeDecode(
+      "JobConfigurationApi#Unknown.Json",
+      JobConfigurationApi.Unknown: JobConfigurationApi
+    )
   }
 
-  val invalidJobTypes: TableFor1[String] = Table(
-    "json",
+  val invalidJobTypes = List(
     """{"jobType": "cy"}""",
     """{}""",
     """{"jobType": "extr"}""",
     """{"jobType": "unkn"}""",
-    """{"jobType": "q"}""",
+    """{"jobType": "q"}"""
   )
 
-  it should "reject invalid job types" in {
-    forAll(invalidJobTypes) { s =>
+  test("reject invalid job types") {
+    invalidJobTypes.foreach { s =>
       val test: Either[Error, JobConfigurationApi] =
         parse(s)
           .flatMap(_.as[JobConfigurationApi])
 
-      test shouldBe Symbol("left")
+      assert(test.isLeft)
     }
   }
 

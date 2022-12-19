@@ -3,19 +3,16 @@ package com.permutive.google.bigquery.models.schema
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.forAll
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
-  behavior.of("AccessApi.decode")
-
+class AccessSpec extends ScalaCheckSuite {
   case class Collection(access: List[Access])
 
   implicit val niceStringArb: Arbitrary[String] = Arbitrary(Gen.alphaNumStr)
 
-  it should "encode and decode an access request with an email" in {
+  property("encode and decode an access request with an email") {
     forAll { (role: String, email: String) =>
       val json =
         s"""{
@@ -25,12 +22,12 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
 
       val access = Access.userByEmail(role, email)
 
-      access.asJson.spaces2 shouldEqual json
-      parse(json).flatMap(_.as[Access]) shouldEqual Right(access)
+      assertEquals(access.asJson.spaces2, json)
+      assertEquals(parse(json).flatMap(_.as[Access]), Right(access))
     }
   }
 
-  it should "encode and decode an access request with a group email" in {
+  property("encode and decode an access request with a group email") {
     forAll { (role: String, email: String) =>
       val json =
         s"""{
@@ -40,12 +37,12 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
 
       val access = Access.groupByEmail(role, email)
 
-      access.asJson.spaces2 shouldEqual json
-      parse(json).flatMap(_.as[Access]) shouldEqual Right(access)
+      assertEquals(access.asJson.spaces2, json)
+      assertEquals(parse(json).flatMap(_.as[Access]), Right(access))
     }
   }
 
-  it should "encode and decode an access request with a domain" in {
+  property("encode and decode an access request with a domain") {
     forAll { (role: String, domain: String) =>
       val json =
         s"""{
@@ -55,12 +52,12 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
 
       val access = Access.domain(role, domain)
 
-      access.asJson.spaces2 shouldEqual json
-      parse(json).flatMap(_.as[Access]) shouldEqual Right(access)
+      assertEquals(access.asJson.spaces2, json)
+      assertEquals(parse(json).flatMap(_.as[Access]), Right(access))
     }
   }
 
-  it should "encode and decode an access request with a special group" in {
+  property("encode and decode an access request with a special group") {
     forAll { (role: String, group: String) =>
       val json =
         s"""{
@@ -70,12 +67,12 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
 
       val access = Access.specialGroup(role, group)
 
-      access.asJson.spaces2 shouldEqual json
-      parse(json).flatMap(_.as[Access]) shouldEqual Right(access)
+      assertEquals(access.asJson.spaces2, json)
+      assertEquals(parse(json).flatMap(_.as[Access]), Right(access))
     }
   }
 
-  it should "encode an access request with an IAM member" in {
+  property("encode an access request with an IAM member") {
     forAll { (role: String, member: String) =>
       val json =
         s"""{
@@ -85,20 +82,20 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
 
       val access = Access.iamMember(role, member)
 
-      access.asJson.spaces2 shouldEqual json
-      parse(json).flatMap(_.as[Access]) shouldEqual Right(access)
+      assertEquals(access.asJson.spaces2, json)
+      assertEquals(parse(json).flatMap(_.as[Access]), Right(access))
     }
   }
 
-  it should "encode and decode a collection" in {
+  property("encode and decode a collection") {
     forAll {
       (
-        role: String,
-        email1: String,
-        email2: String,
-        domain: String,
-        group: String,
-        iamMember: String,
+          role: String,
+          email1: String,
+          email2: String,
+          domain: String,
+          group: String,
+          iamMember: String
       ) =>
         val json =
           s"""{
@@ -132,13 +129,13 @@ class AccessSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProperty
             Access.groupByEmail(role, email2),
             Access.domain(role, domain),
             Access.specialGroup(role, group),
-            Access.iamMember(role, iamMember),
-          ),
+            Access.iamMember(role, iamMember)
+          )
         )
 
-        collection.asJson.spaces2 shouldEqual json
+        assertEquals(collection.asJson.spaces2, json)
 
-        parse(json).flatMap(_.as[Collection]) shouldEqual Right(collection)
+        assertEquals(parse(json).flatMap(_.as[Collection]), Right(collection))
     }
   }
 }

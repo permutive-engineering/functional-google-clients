@@ -1,27 +1,23 @@
 package com.permutive.google.bigquery.rest.models.job.queryparameters
 
 import com.permutive.google.bigquery.rest.models.ArbitraryInstances
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.forAll
 
 class QueryParameterEncoderSpec
-    extends AnyFlatSpec
-    with Matchers
-    with TypeCheckedTripleEquals
-    with ScalaCheckDrivenPropertyChecks
+    extends ScalaCheckSuite
     with ArbitraryInstances {
 
-  behavior.of("QueryParameterEncoder.deriveEncoder")
-
-  it should "derive the correct QueryParameterEncoder" in {
+  property("derive the correct QueryParameterEncoder") {
     forAll { (ss: List[String], name: String) =>
       val encoded = QueryParameterEncoder[List[String]].encode(name, ss)
 
-      encoded.name should ===(Some(name))
-      encoded.parameterType should ===(ParameterEncoder[List[String]].`type`)
-      encoded.parameterValue should ===(ParameterEncoder[List[String]].value(ss))
+      assertEquals(encoded.name, Some(name))
+      assertEquals(encoded.parameterType, ParameterEncoder[List[String]].`type`)
+      assertEquals(
+        encoded.parameterValue,
+        ParameterEncoder[List[String]].value(ss)
+      )
     }
   }
 
