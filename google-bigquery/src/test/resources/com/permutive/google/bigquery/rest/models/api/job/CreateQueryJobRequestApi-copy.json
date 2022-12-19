@@ -1,0 +1,10 @@
+{
+  "configuration" : {
+    "jobType" : "copy"
+  },
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  }
+}

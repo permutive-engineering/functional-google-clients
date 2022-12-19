@@ -1,0 +1,58 @@
+{
+  "query" : "SELECT * FROM foo WHERE bar = @x",
+  "useLegacySql" : false,
+  "queryParameters" : [
+    {
+      "name" : "x",
+      "parameterType" : {
+        "type" : "STRUCT",
+        "arrayType" : null,
+        "structTypes" : [
+          {
+            "name" : "baz",
+            "type" : {
+              "type" : "INT64",
+              "arrayType" : null,
+              "structTypes" : null
+            }
+          },
+          {
+            "name" : "qux",
+            "type" : {
+              "type" : "ARRAY",
+              "arrayType" : {
+                "type" : "STRING",
+                "arrayType" : null,
+                "structTypes" : null
+              },
+              "structTypes" : null
+            }
+          }
+
+        ]
+      },
+      "parameterValue" : {
+        "value" : null,
+        "arrayValues" : null,
+        "structValues" : {
+          "baz" : {
+            "value" : "1",
+            "arrayValues" : null,
+            "structValues" : null
+          },
+          "qux" : {
+            "value" : null,
+            "arrayValues" : [
+              {
+                "value" : "hello",
+                "arrayValues" : null,
+                "structValues": null
+              }
+            ],
+            "structValues" : null
+          }
+        }
+      }
+    }
+  ]
+}

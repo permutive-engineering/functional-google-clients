@@ -1,0 +1,113 @@
+{
+  "kind" : "bigquery#getQueryResultsResponse",
+  "etag" : "z+n79VM6Nz4l/KYAfvQ8Bw==",
+  "schema" : {
+    "fields" : [
+      {
+        "name" : "time",
+        "type" : "TIMESTAMP",
+        "mode" : "REQUIRED",
+        "description" : "Timestamp for when the event was received by Permutive (in UTC)"
+      },
+      {
+        "name" : "event_id",
+        "type" : "STRING",
+        "mode" : "REQUIRED",
+        "description" : "Unique identifier for each individual event (Pageview, FormSubmission etc) sent into Permutive"
+      },
+      {
+        "name" : "user_id",
+        "type" : "STRING",
+        "mode" : "NULLABLE",
+        "description" : "Identifier unique to a particular user"
+      },
+      {
+        "name" : "view_id",
+        "type" : "STRING",
+        "mode" : "NULLABLE",
+        "description" : "Identifier unique to a particular page or screen view. You can use this property to identify all events that occurred on the same view"
+      },
+      {
+        "name" : "session_id",
+        "type" : "STRING",
+        "mode" : "NULLABLE",
+        "description" : "Identifier unique to a user's session. Sessions last 30 minutes unless a user stays on site"
+      },
+      {
+        "name" : "segments",
+        "type" : "INTEGER",
+        "mode" : "REPEATED",
+        "description" : "A list of all segments the user was in when the event fired"
+      },
+      {
+        "name" : "properties",
+        "type" : "RECORD",
+        "mode" : "NULLABLE",
+        "fields" : [
+          {
+            "name" : "client",
+            "type" : "RECORD",
+            "mode" : "NULLABLE",
+            "fields" : [
+              {
+                "name" : "domain",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The domain"
+              },
+              {
+                "name" : "type",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The type of the client, e.g. iOS or Android"
+              },
+              {
+                "name" : "url",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The URL of the web page the event occurred on"
+              },
+              {
+                "name" : "referrer",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The referrer"
+              },
+              {
+                "name" : "title",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The title of the web page the event occurrred on"
+              },
+              {
+                "name" : "user_agent",
+                "type" : "STRING",
+                "mode" : "NULLABLE",
+                "description" : "The user agent of the client the event occurred on"
+              }
+            ]
+          },
+          {
+            "name" : "id",
+            "type" : "STRING",
+            "mode" : "REQUIRED",
+            "description" : "Segment ID"
+          }
+        ]
+      },
+      {
+        "name" : "workspace_id",
+        "type" : "STRING"
+      }
+    ]
+  },
+  "jobReference" : {
+    "projectId" : "permutive-1258",
+    "jobId" : "2050b9fb-8bf9-41af-818b-73dd9d914daa",
+    "location" : "US"
+  },
+  "totalBytesProcessed" : "713770173188",
+  "jobComplete" : true,
+  "cacheHit" : false,
+  "numDmlAffectedRows" : "514"
+}

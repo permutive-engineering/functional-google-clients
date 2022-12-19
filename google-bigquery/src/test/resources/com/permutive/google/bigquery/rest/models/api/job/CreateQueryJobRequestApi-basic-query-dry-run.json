@@ -1,0 +1,16 @@
+{
+  "configuration" : {
+    "query" : {
+      "query" : "SELECT * FROM foo WHERE bar = 1",
+      "useLegacySql" : false,
+      "queryParameters" : null
+    },
+    "dryRun" : true,
+    "jobType" : "query"
+  },
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  }
+}

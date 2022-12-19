@@ -1,0 +1,58 @@
+{
+  "kind" : "this-kind",
+  "etag" : "some-etag",
+  "id" : "test-project:us-1.",
+  "selfLink" : "https://www.googleapis.com/bigquery/v2/projects/test-project/jobs/?location=us-1",
+  "user_email" : "foo@bar.com",
+  "configuration" : {
+    "query" : {
+      "query" : "SELECT * FROM foo WHERE bar = 1",
+      "destinationTable" : {
+        "projectId" : "test-project",
+        "datasetId" : "test-dataset",
+        "tableId" : "table"
+      },
+      "createDisposition" : "CREATE_IF_NEEDED",
+      "writeDisposition" : "WRITE_TRUNCATE",
+      "priority" : "INTERACTIVE",
+      "useLegacySql" : false
+    },
+    "dryRun" : true,
+    "jobType" : "QUERY"
+  },
+  "jobReference" : {
+    "projectId" : "test-project",
+    "location" : "us-1"
+  },
+  "statistics" : {
+    "creationTime" : "1567513492669",
+    "totalBytesProcessed" : "999999999",
+    "query" : {
+      "totalBytesProcessed" : "1585515762",
+      "totalBytesBilled" : "0",
+      "cacheHit" : false,
+      "referencedTables" : [
+        {
+          "projectId" : "test-project",
+          "datasetId" : "test-dataset",
+          "tableId" : "table"
+        }
+      ],
+      "schema" : {
+        "fields" : [
+          {
+            "name" : "float-nullable",
+            "type" : "FLOAT",
+            "mode" : "NULLABLE",
+            "description": "nullable float"
+          }
+        ]
+      },
+      "statementType" : "SELECT",
+      "totalBytesProcessedAccuracy" : "PRECISE"
+    }
+  },
+  "status" : {
+    "state" : "DONE"
+  }
+}

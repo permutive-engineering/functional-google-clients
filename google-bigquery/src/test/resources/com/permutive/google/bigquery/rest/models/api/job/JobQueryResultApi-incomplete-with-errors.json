@@ -1,0 +1,29 @@
+{
+  "kind" : "another-kind",
+  "etag" : "another-etag",
+  "schema" : null,
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  },
+  "totalRows" : null,
+  "pageToken" : null,
+  "rows" : null,
+  "totalBytesProcessed" : null,
+  "jobComplete" : false,
+  "errors" : [
+    {
+      "reason" : "reason-1",
+      "location" : "location-1",
+      "message" : "message-1"
+    },
+    {
+      "reason" : "reason-2",
+      "location" : "location-2",
+      "message" : "message-2"
+    }
+  ],
+  "cacheHit" : null,
+  "numDmlAffectedRows" : null
+}

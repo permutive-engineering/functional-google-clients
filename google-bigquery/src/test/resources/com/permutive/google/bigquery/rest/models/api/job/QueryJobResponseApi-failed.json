@@ -1,0 +1,43 @@
+{
+  "status" : {
+    "state" : "DONE",
+    "errorResult" : {
+      "reason" : "reason-1",
+      "location" : "location-1",
+      "message" : "message-1"
+    },
+    "errors" : [
+      {
+        "reason" : "reason-2",
+        "location" : "location-2",
+        "message" : "message-2"
+      },
+      {
+        "reason" : "reason-3",
+        "location" : "location-3",
+        "message" : "message-3"
+      }
+    ]
+  },
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  },
+  "configuration" : {
+    "jobType": "query",
+    "query" : {
+      "query" : "SELECT * FROM foo WHERE bar = 1",
+      "writeDisposition" : "WRITE_TRUNCATE",
+      "destinationTable" : {
+        "projectId" : "test-project",
+        "datasetId" : "test-dataset",
+        "tableId" : "table"
+      },
+      "useLegacySql" : false
+    }
+  },
+  "kind" : "this-kind",
+  "etag" : "some-etag",
+  "selfLink" : null
+}

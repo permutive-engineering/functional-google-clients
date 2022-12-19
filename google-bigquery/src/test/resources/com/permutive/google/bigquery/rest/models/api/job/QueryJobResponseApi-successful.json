@@ -1,0 +1,25 @@
+{
+  "status" : {
+    "state" : "DONE"
+  },
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  },
+  "configuration" : {
+    "jobType": "query",
+    "query" : {
+      "query" : "SELECT * FROM foo WHERE bar = 1",
+      "writeDisposition" : "WRITE_TRUNCATE",
+      "destinationTable" : {
+        "projectId" : "test-project",
+        "datasetId" : "test-dataset",
+        "tableId" : "table"
+      },
+      "useLegacySql" : false
+    }
+  },
+  "kind" : "this-kind",
+  "etag" : "some-etag"
+}

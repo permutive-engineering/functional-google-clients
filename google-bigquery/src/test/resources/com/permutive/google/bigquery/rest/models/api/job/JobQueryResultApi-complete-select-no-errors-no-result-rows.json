@@ -1,0 +1,64 @@
+{
+  "kind" : "another-kind",
+  "etag" : "another-etag",
+  "schema" : {
+    "fields" : [
+      {
+        "name" : "bools-with-desc",
+        "type" : "BOOLEAN",
+        "mode" : "REPEATED",
+        "description" : "array of booleans",
+        "fields" : null
+      },
+      {
+        "name" : "string-required",
+        "type" : "STRING",
+        "mode" : "REQUIRED",
+        "description" : null,
+        "fields" : null
+      },
+      {
+        "name" : "float-nullable",
+        "type" : "FLOAT",
+        "mode" : "NULLABLE",
+        "description" : "nullable float",
+        "fields" : null
+      },
+      {
+        "name" : "outer-string",
+        "type" : "STRING",
+        "mode" : "REQUIRED",
+        "description" : null,
+        "fields" : [
+          {
+            "name" : "inner-int",
+            "type" : "INTEGER",
+            "mode" : "REQUIRED",
+            "description" : null,
+            "fields" : null
+          }
+        ]
+      },
+      {
+        "name" : "no-mode",
+        "type" : "STRING",
+        "mode" : null,
+        "description" : null,
+        "fields" : null
+      }
+    ]
+  },
+  "jobReference" : {
+    "jobId" : "my-job",
+    "location" : "us-1",
+    "projectId" : "test-project"
+  },
+  "totalRows" : "0",
+  "pageToken" : null,
+  "rows" : null,
+  "totalBytesProcessed" : "999",
+  "jobComplete" : true,
+  "errors" : null,
+  "cacheHit" : true,
+  "numDmlAffectedRows" : null
+}

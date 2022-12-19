@@ -1,0 +1,10 @@
+{
+  "query" : "SELECT * FROM foo WHERE bar = 1",
+  "writeDisposition" : "WRITE_TRUNCATE",
+  "destinationTable" : {
+    "projectId" : "test-project",
+    "datasetId" : "test-dataset",
+    "tableId" : "table"
+  },
+  "useLegacySql" : false
+}
