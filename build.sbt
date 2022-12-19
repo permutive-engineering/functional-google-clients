@@ -27,8 +27,6 @@ val Munit = "0.7.29"
 
 val MunitCE3 = "1.0.7"
 
-val Refined = "0.10.1"
-
 val Scala213 = "2.13.10"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -38,6 +36,7 @@ lazy val root =
     gcpTypes,
     googleAuth,
     googleProjectId,
+    googleProjectIdPureconfig,
     googleBigQuery
   )
 
@@ -100,7 +99,6 @@ lazy val googleProjectIdPureconfig = crossProject(JVMPlatform)
   .settings(
     name := "google-project-pureconfig",
     libraryDependencies ++= Seq(
-      "eu.timepit" %%% "refined-pureconfig" % Refined,
       "com.github.pureconfig" %%% "pureconfig-generic" % "0.17.2",
       "org.scalameta" %%% "munit" % Munit % Test
     )
