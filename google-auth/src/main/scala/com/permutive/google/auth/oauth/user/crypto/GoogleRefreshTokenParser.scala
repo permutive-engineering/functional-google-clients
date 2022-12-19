@@ -37,7 +37,7 @@ object GoogleRefreshTokenParser {
   private def linesResource[F[_]](path: Path)(implicit
       F: Sync[F]
   ): Resource[F, java.util.stream.Stream[String]] =
-    Resource.fromAutoCloseable(F.delay(Files.lines(path)))
+    Resource.fromAutoCloseable(F.blocking(Files.lines(path)))
 
   case class EmptyRefreshTokenFileException(path: Path)
       extends RuntimeException(

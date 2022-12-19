@@ -17,6 +17,7 @@
 package com.permutive.google.auth.oauth.models
 
 import com.permutive.google.auth.oauth.models.AccessToken._
+import io.circe.Decoder
 
 sealed trait AccessToken {
   def accessToken: Token
@@ -25,10 +26,22 @@ sealed trait AccessToken {
 }
 
 object AccessToken {
-  case class Token(value: String)
-      extends AnyVal // Using AnyVal so jsoniter can derive decoders for us
+  case class Token(value: String) extends AnyVal
+  object Token {
+    implicit val decoder: Decoder[Token] = Decoder.decodeString.map(Token(_))
+  }
+
   case class TokenType(value: String) extends AnyVal
+  object TokenType {
+    implicit val decoder: Decoder[TokenType] =
+      Decoder.decodeString.map(TokenType(_))
+  }
+
   case class ExpiresIn(value: Int) extends AnyVal
+  object ExpiresIn {
+    implicit val decoder: Decoder[ExpiresIn] =
+      Decoder.decodeInt.map(ExpiresIn(_))
+  }
 }
 
 final case class ServiceAccountAccessToken(
