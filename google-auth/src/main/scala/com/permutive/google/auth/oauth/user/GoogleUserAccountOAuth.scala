@@ -76,10 +76,9 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 object GoogleUserAccountOAuth {
 
   def create[F[_]: Async](httpClient: Client[F]): F[UserAccountOAuth[F]] =
-    for {
-      implicit0(lg: Logger[F]) <- Slf4jLogger.create[F]
-      googleOAuth <- Sync[F].delay(
+    Slf4jLogger.create[F].flatMap { implicit logger =>
+      Sync[F].delay(
         new GoogleUserAccountOAuth(Constants.googleOAuthRequestUri, httpClient)
       )
-    } yield googleOAuth
+    }
 }

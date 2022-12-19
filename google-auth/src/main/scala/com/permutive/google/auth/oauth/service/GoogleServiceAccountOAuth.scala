@@ -101,15 +101,14 @@ object GoogleServiceAccountOAuth {
       key: RSAPrivateKey,
       httpClient: Client[F]
   ): F[ServiceAccountOAuth[F]] =
-    for {
-      implicit0(lg: Logger[F]) <- Slf4jLogger.create[F]
-      googleOAuth <- Sync[F].delay(
+    Slf4jLogger.create[F].flatMap { implicit logger =>
+      Sync[F].delay(
         new GoogleServiceAccountOAuth(
           key,
           Constants.googleOAuthRequestUri,
           httpClient
         )
       )
-    } yield googleOAuth
+    }
 
 }
