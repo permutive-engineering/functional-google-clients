@@ -1,14 +1,15 @@
 package com.permutive.google.bigquery.models.table
 
 import io.circe.{Decoder, Encoder}
-import io.estatico.newtype.macros.newtype
 
 object NewTypes {
 
-  @newtype case class TableId(value: String)
+  case class TableId(value: String) extends AnyVal
   object TableId {
-    implicit val encoder: Encoder[TableId] = deriving
-    implicit val decoder: Decoder[TableId] = deriving
+    implicit val encoder: Encoder[TableId] =
+      Encoder.encodeString.contramap(_.value)
+    implicit val decoder: Decoder[TableId] =
+      Decoder.decodeString.map(TableId(_))
   }
 
 }

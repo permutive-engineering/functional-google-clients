@@ -17,12 +17,14 @@ import com.permutive.google.bigquery.rest.models.job.NewTypes._
 import com.permutive.google.bigquery.rest.models.job._
 import com.permutive.google.bigquery.rest.models.job.queryparameters.QueryParameter
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes._
-import com.permutive.google.bigquery.rest.models.job.results.{DryRunQueryJob, QueryJobResults}
+import com.permutive.google.bigquery.rest.models.job.results.{
+  DryRunQueryJob,
+  QueryJobResults
+}
 import com.permutive.google.bigquery.rest.utils.UriUtils
 import com.permutive.google.bigquery.utils.Circe.circeEntityEncoderDropNullValues
 import io.circe.Encoder
 import io.circe.syntax._
-import io.estatico.newtype.ops._
 import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
@@ -36,8 +38,8 @@ import java.util.UUID
 import scala.concurrent.duration._
 
 class HttpBigQueryJob[F[_]: HttpMethods: Logger](
-  projectName: BigQueryProjectName,
-  restBaseUri: Uri,
+    projectName: BigQueryProjectName,
+    restBaseUri: Uri
 )(implicit F: Async[F])
     extends BigQueryJob[F] {
   object Dsl extends Http4sDsl[F] with Http4sClientDsl[F]
@@ -47,7 +49,7 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
     circeEntityEncoderDropNullValues[F, T]
 
   private[this] val randomJobId: F[JobId] =
-    Sync[F].delay(UUID.randomUUID().toString.coerce[JobId])
+    Sync[F].delay(JobId(UUID.randomUUID().toString))
 
   private def resolveJobId(jobIdO: Option[JobId]): F[JobId] =
     jobIdO.fold(randomJobId)(_.pure[F])
@@ -74,14 +76,22 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
     location.fold(uri)(l => uri.withQueryParam("location", l.value))
 
   override def createQueryJob(
-    jobId: Option[JobId],
-    query: Query,
-    legacySql: Boolean = false,
-    location: Option[Location] = None,
-    queryParameters: Option[NonEmptyList[QueryParameter]] = None,
+      jobId: Option[JobId],
+      query: Query,
+      legacySql: Boolean = false,
+      location: Option[Location] = None,
+      queryParameters: Option[NonEmptyList[QueryParameter]] = None
   ): F[Job] = {
     val requestBody: JobId => CreateQueryJobRequestApi =
-      jId => createQueryJobBody(jId, query, legacySql, location, Some(false), queryParameters)
+      jId =>
+        createQueryJobBody(
+          jId,
+          query,
+          legacySql,
+          location,
+          Some(false),
+          queryParameters
+        )
 
     for {
       jId <- resolveJobId(jobId)
@@ -89,19 +99,30 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
       _ <- Logger[F].debug(s"Creating basic query job: $body")
       res <-
         HttpMethods[F]
-          .sendAuthorizedRequest[QueryJobResponseApi](jobsUriPost(body), "create basic job")
+          .sendAuthorizedRequest[QueryJobResponseApi](
+            jobsUriPost(body),
+            "create basic job"
+          )
           .map(Job.fromResponse)
     } yield res
   }
 
   override def dryRunQuery(
-    query: Query,
-    legacySql: Boolean = false,
-    location: Option[Location] = None,
-    queryParameters: Option[NonEmptyList[QueryParameter]] = None,
+      query: Query,
+      legacySql: Boolean = false,
+      location: Option[Location] = None,
+      queryParameters: Option[NonEmptyList[QueryParameter]] = None
   ): F[DryRunQueryJob] = {
     val requestBody: JobId => CreateQueryJobRequestApi =
-      jId => createQueryJobBody(jId, query, legacySql, location, Some(true), queryParameters)
+      jId =>
+        createQueryJobBody(
+          jId,
+          query,
+          legacySql,
+          location,
+          Some(true),
+          queryParameters
+        )
 
     for {
       jId <- randomJobId
@@ -109,55 +130,62 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
       _ <- Logger[F].debug(s"Dry-running basic query job: $body")
       res <-
         HttpMethods[F]
-          .sendAuthorizedRequest[DryRunQueryJobResponseApi](jobsUriPost(body), "dry-run basic job")
+          .sendAuthorizedRequest[DryRunQueryJobResponseApi](
+            jobsUriPost(body),
+            "dry-run basic job"
+          )
           .map(DryRunQueryJob.fromResponse)
     } yield res
   }
 
   private def createQueryJobBody(
-    jobId: JobId,
-    query: Query,
-    legacySql: Boolean,
-    location: Option[Location],
-    dryRun: Option[Boolean],
-    queryParameters: Option[NonEmptyList[QueryParameter]],
+      jobId: JobId,
+      query: Query,
+      legacySql: Boolean,
+      location: Option[Location],
+      dryRun: Option[Boolean],
+      queryParameters: Option[NonEmptyList[QueryParameter]]
   ): CreateQueryJobRequestApi =
     CreateQueryJobRequestApi(
       JobConfigurationApi.Query(
         JobConfigurationQueryBasicApi(
           query,
           legacySql,
-          queryParameters,
+          queryParameters
         ),
-        dryRun,
+        dryRun
       ),
       JobReferenceApi(
         jobId,
         location,
-        projectName,
-      ),
+        projectName
+      )
     )
 
   override def createQueryJobPollSuccessful(
-    jobId: Option[JobId],
-    query: Query,
-    legacySql: Boolean = false,
-    location: Option[Location] = None,
-    pollSettings: PollSettings = PollSettings.default,
-    queryParameters: Option[NonEmptyList[QueryParameter]] = None,
+      jobId: Option[JobId],
+      query: Query,
+      legacySql: Boolean = false,
+      location: Option[Location] = None,
+      pollSettings: PollSettings = PollSettings.default,
+      queryParameters: Option[NonEmptyList[QueryParameter]] = None
   ): F[SuccessfulJob] =
     for {
-      job           <- createQueryJob(jobId, query, legacySql, location, queryParameters)
-      successfulJob <- pollUntilSuccessful(job.id, pollSettings = pollSettings, location = location)
+      job <- createQueryJob(jobId, query, legacySql, location, queryParameters)
+      successfulJob <- pollUntilSuccessful(
+        job.id,
+        pollSettings = pollSettings,
+        location = location
+      )
     } yield successfulJob
 
   private def pollUntilSuccessful(
-    jobId: JobId,
-    pollSettings: PollSettings,
-    location: Option[Location],
+      jobId: JobId,
+      pollSettings: PollSettings,
+      location: Option[Location]
   ): F[SuccessfulJob] =
     for {
-      completeJob   <- pollJob(jobId, location, pollSettings)
+      completeJob <- pollJob(jobId, location, pollSettings)
       successfulJob <- raiseIfJobFailed(completeJob)
     } yield successfulJob
 
@@ -168,13 +196,13 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
     }
 
   override def createQueryWriteTableJob(
-    jobId: Option[JobId],
-    query: Query,
-    destinationDataset: DatasetId,
-    destinationTable: TableId,
-    writeDisposition: WriteDisposition,
-    legacySql: Boolean = false,
-    location: Option[Location] = None,
+      jobId: Option[JobId],
+      query: Query,
+      destinationDataset: DatasetId,
+      destinationTable: TableId,
+      writeDisposition: WriteDisposition,
+      legacySql: Boolean = false,
+      location: Option[Location] = None
   ): F[Job] = {
     val requestBody: JobId => CreateQueryJobRequestApi =
       jId =>
@@ -186,16 +214,16 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
               TableReferenceApi(
                 projectName,
                 destinationDataset,
-                destinationTable,
+                destinationTable
               ),
-              legacySql,
-            ),
+              legacySql
+            )
           ),
           JobReferenceApi(
             jId,
             location,
-            projectName,
-          ),
+            projectName
+          )
         )
 
     for {
@@ -204,20 +232,23 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
       _ <- Logger[F].debug(s"Creating write table query job: $body")
       res <-
         HttpMethods[F]
-          .sendAuthorizedRequest[QueryJobResponseApi](jobsUriPost(body), "create write table job")
+          .sendAuthorizedRequest[QueryJobResponseApi](
+            jobsUriPost(body),
+            "create write table job"
+          )
           .map(Job.fromResponse)
     } yield res
   }
 
   override def createQueryWriteTableJobPollSuccessful(
-    jobId: Option[JobId],
-    query: Query,
-    destinationDataset: DatasetId,
-    destinationTable: TableId,
-    writeDisposition: WriteDisposition,
-    legacySql: Boolean = false,
-    location: Option[Location] = None,
-    pollSettings: PollSettings = PollSettings.default,
+      jobId: Option[JobId],
+      query: Query,
+      destinationDataset: DatasetId,
+      destinationTable: TableId,
+      writeDisposition: WriteDisposition,
+      legacySql: Boolean = false,
+      location: Option[Location] = None,
+      pollSettings: PollSettings = PollSettings.default
   ): F[SuccessfulJob] =
     for {
       job <- createQueryWriteTableJob(
@@ -227,43 +258,69 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
         destinationTable,
         writeDisposition,
         legacySql,
-        location,
+        location
       )
-      successfulJob <- pollUntilSuccessful(job.id, pollSettings, location = location)
+      successfulJob <- pollUntilSuccessful(
+        job.id,
+        pollSettings,
+        location = location
+      )
     } yield successfulJob
 
-  override def getQueryJobState(jobId: JobId, location: Option[Location] = None): F[Job] =
+  override def getQueryJobState(
+      jobId: JobId,
+      location: Option[Location] = None
+  ): F[Job] =
     Logger[F].debug(s"Getting status of job $jobId") >>
       HttpMethods[F]
-        .sendAuthorizedGet[QueryJobResponseApi](jobUriLocation(jobId, location), "get job")
+        .sendAuthorizedGet[QueryJobResponseApi](
+          jobUriLocation(jobId, location),
+          "get job"
+        )
         .map(Job.fromResponse)
 
   override def pollJob(
-    jobId: JobId,
-    location: Option[Location] = None,
-    pollSettings: PollSettings = PollSettings.default,
+      jobId: JobId,
+      location: Option[Location] = None,
+      pollSettings: PollSettings = PollSettings.default
   ): F[CompleteJob] =
     timeNow.flatMap { now =>
-      pollJobInternal(jobId, location, pollSettings.delay, now.plusMillis(pollSettings.timeout.toMillis))
+      pollJobInternal(
+        jobId,
+        location,
+        pollSettings.delay,
+        now.plusMillis(pollSettings.timeout.toMillis)
+      )
     }
 
   private def pollJobInternal(
-    id: JobId,
-    location: Option[Location],
-    pollDelay: FiniteDuration,
-    timeoutAt: Instant,
-    pollCount: Int = 1,
+      id: JobId,
+      location: Option[Location],
+      pollDelay: FiniteDuration,
+      timeoutAt: Instant,
+      pollCount: Int = 1
   ): F[CompleteJob] =
     for {
-      _   <- Logger[F].debug(s"Polling job $id for status, poll count $pollCount")
+      _ <- Logger[F].debug(s"Polling job $id for status, poll count $pollCount")
       now <- timeNow
-      _   <- if (now.isAfter(timeoutAt)) F.raiseError[Unit](TimeoutException(id, pollDelay, pollCount)) else F.unit
+      _ <-
+        if (now.isAfter(timeoutAt))
+          F.raiseError[Unit](TimeoutException(id, pollDelay, pollCount))
+        else F.unit
       job <- getQueryJobState(id, location)
       comp <- job match {
         case comp: CompleteJob =>
-          Logger[F].debug(s"Job $id completed, took $pollCount polls with interval $pollDelay") >> comp.pure[F]
+          Logger[F].debug(
+            s"Job $id completed, took $pollCount polls with interval $pollDelay"
+          ) >> comp.pure[F]
         case _: IncompleteJob =>
-          Temporal[F].sleep(pollDelay) >> pollJobInternal(id, location, pollDelay, timeoutAt, pollCount + 1)
+          Temporal[F].sleep(pollDelay) >> pollJobInternal(
+            id,
+            location,
+            pollDelay,
+            timeoutAt,
+            pollCount + 1
+          )
       }
     } yield comp
 
@@ -275,28 +332,30 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
   private[this] val queriesUri: Uri = projectUri / "queries"
 
   private def getJobResultUri(
-    jobId: JobId,
-    pageToken: Option[PageToken],
-    maxResults: Option[Int],
-    location: Option[Location],
+      jobId: JobId,
+      pageToken: Option[PageToken],
+      maxResults: Option[Int],
+      location: Option[Location]
   ): Uri = {
-    val init     = uriWithLocation(queriesUri / jobId.value, location)
+    val init = uriWithLocation(queriesUri / jobId.value, location)
     val withPage = UriUtils.uriWithPageToken(init, pageToken)
 
     UriUtils.uriWithMaxResults(withPage, maxResults)
   }
 
   override def getQueryJobResults(
-    jobId: JobId,
-    location: Option[Location] = None,
-    pageToken: Option[PageToken] = None,
-    maxResults: Option[Int] = None,
+      jobId: JobId,
+      location: Option[Location] = None,
+      pageToken: Option[PageToken] = None,
+      maxResults: Option[Int] = None
   ): F[QueryJobResults] =
-    Logger[F].debug(s"Getting results of job $jobId (page token: $pageToken; max results per page: $maxResults)") >>
+    Logger[F].debug(
+      s"Getting results of job $jobId (page token: $pageToken; max results per page: $maxResults)"
+    ) >>
       HttpMethods[F]
         .sendAuthorizedGet[JobQueryResultApi](
           getJobResultUri(jobId, pageToken, maxResults, location),
-          "get job results",
+          "get job results"
         )
         .map(QueryJobResults.fromResponse)
         .widen[Either[Throwable, QueryJobResults]]
@@ -307,18 +366,19 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
 object HttpBigQueryJob {
 
   def create[F[_]: Async](
-    projectName: BigQueryProjectName,
-    tokenF: F[AccessToken],
-    client: Client[F],
-    retryConfiguration: Option[RetryConfiguration] = None,
+      projectName: BigQueryProjectName,
+      tokenF: F[AccessToken],
+      client: Client[F],
+      retryConfiguration: Option[RetryConfiguration] = None
   ): F[BigQueryJob[F]] = {
-    implicit val httpMethods: HttpMethods[F] = HttpMethods.impl(client, tokenF, retryConfiguration)
+    implicit val httpMethods: HttpMethods[F] =
+      HttpMethods.impl(client, tokenF, retryConfiguration)
 
     create(projectName)
   }
 
   def create[F[_]: Async: HttpMethods](
-    projectName: BigQueryProjectName,
+      projectName: BigQueryProjectName
   ): F[BigQueryJob[F]] =
     Slf4jLogger.create[F].map { implicit l =>
       new HttpBigQueryJob(projectName, ApiEndpoints.baseRestUri)

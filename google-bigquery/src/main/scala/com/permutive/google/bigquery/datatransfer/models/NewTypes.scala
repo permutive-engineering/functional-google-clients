@@ -5,12 +5,11 @@ import java.time.format.DateTimeFormatter
 
 import cats.Eq
 import io.circe.{Decoder, Encoder}
-import io.estatico.newtype.macros.newtype
 
 object NewTypes {
 
   // Documentation: https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml
-  @newtype case class Schedule(value: String)
+  case class Schedule(value: String) extends AnyVal
   object Schedule {
 
     def daily(at: LocalTime): Schedule =
@@ -18,22 +17,28 @@ object NewTypes {
 
     private[this] val dailyTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-    implicit val encoder: Encoder[Schedule] = deriving
-    implicit val decoder: Decoder[Schedule] = deriving
+    implicit val encoder: Encoder[Schedule] =
+      Encoder.encodeString.contramap(_.value)
+    implicit val decoder: Decoder[Schedule] =
+      Decoder.decodeString.map(Schedule(_))
   }
 
-  @newtype case class DisplayName(value: String)
+  case class DisplayName(value: String) extends AnyVal
   object DisplayName {
-    implicit val encoder: Encoder[DisplayName] = deriving
-    implicit val decoder: Decoder[DisplayName] = deriving
+    implicit val encoder: Encoder[DisplayName] =
+      Encoder.encodeString.contramap(_.value)
+    implicit val decoder: Decoder[DisplayName] =
+      Decoder.decodeString.map(DisplayName(_))
 
     implicit val eq: Eq[DisplayName] = Eq.fromUniversalEquals
   }
 
-  @newtype case class ConfigId(value: String)
+  case class ConfigId(value: String) extends AnyVal
   object ConfigId {
-    implicit val encoder: Encoder[ConfigId] = deriving
-    implicit val decoder: Decoder[ConfigId] = deriving
+    implicit val encoder: Encoder[ConfigId] =
+      Encoder.encodeString.contramap(_.value)
+    implicit val decoder: Decoder[ConfigId] =
+      Decoder.decodeString.map(ConfigId(_))
   }
 
 }

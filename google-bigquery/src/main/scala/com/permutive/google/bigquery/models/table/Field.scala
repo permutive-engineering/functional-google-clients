@@ -7,25 +7,25 @@ import enumeratum.EnumEntry.Uppercase
 import enumeratum.{CirceEnum, Enum, EnumEntry}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
-import io.estatico.newtype.macros.newtype
 
 // Documentation: https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#resource
 
 case class Field(
-  name: Field.Name,
-  `type`: SQLType,
-  mode: Option[Field.Mode],
-  description: Option[String],
-  fields: Option[NonEmptyList[Field]],
+    name: Field.Name,
+    `type`: SQLType,
+    mode: Option[Field.Mode],
+    description: Option[String],
+    fields: Option[NonEmptyList[Field]]
 )
 
 object Field {
 
-  @newtype case class Name(value: String)
+  case class Name(value: String) extends AnyVal
 
   object Name {
-    implicit val decoder: Decoder[Name] = deriving
-    implicit val encoder: Encoder[Name] = deriving
+    implicit val decoder: Decoder[Name] = Decoder.decodeString.map(Name(_))
+    implicit val encoder: Encoder[Name] =
+      Encoder.encodeString.contramap(_.value)
 
     implicit val eq: Eq[Name] = Eq.fromUniversalEquals
   }
@@ -43,7 +43,7 @@ object Field {
 
   }
 
-  implicit val decoder: Decoder[Field]          = deriveDecoder
+  implicit val decoder: Decoder[Field] = deriveDecoder
   implicit val encoder: Encoder.AsObject[Field] = deriveEncoder
 
 }

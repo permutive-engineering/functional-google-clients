@@ -1,16 +1,17 @@
 package com.permutive.google.bigquery.rest.models.job.results
 
 import io.circe.{Decoder, Encoder, Json}
-import io.estatico.newtype.macros.newtype
 
 object NewTypes {
 
-  @newtype case class PageToken(value: String)
+  case class PageToken(value: String) extends AnyVal
   object PageToken {
-    implicit val decoder: Decoder[PageToken] = deriving
-    implicit val encoder: Encoder[PageToken] = deriving
+    implicit val decoder: Decoder[PageToken] =
+      Decoder.decodeString.map(PageToken(_))
+    implicit val encoder: Encoder[PageToken] =
+      Encoder.encodeString.contramap(_.value)
   }
 
-  @newtype case class JobResultRow(value: Json)
+  case class JobResultRow(value: Json) extends AnyVal
 
 }

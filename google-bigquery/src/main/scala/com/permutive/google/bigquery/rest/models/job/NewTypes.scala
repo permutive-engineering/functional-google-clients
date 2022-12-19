@@ -1,14 +1,14 @@
 package com.permutive.google.bigquery.rest.models.job
 
 import io.circe.{Decoder, Encoder}
-import io.estatico.newtype.macros.newtype
 
 object NewTypes {
 
-  @newtype case class JobId(value: String)
+  case class JobId(value: String) extends AnyVal
   object JobId {
-    implicit val decoder: Decoder[JobId] = deriving
-    implicit val encoder: Encoder[JobId] = deriving
+    implicit val decoder: Decoder[JobId] = Decoder.decodeString.map(JobId(_))
+    implicit val encoder: Encoder[JobId] =
+      Encoder.encodeString.contramap(_.value)
   }
 
 }
