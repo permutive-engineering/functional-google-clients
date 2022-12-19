@@ -90,11 +90,11 @@ jobs:
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: mkdir -p target .js/target gcp-types/.js/target gcp-types/.jvm/target .jvm/target .native/target google-project-id/.jvm/target google-auth/.jvm/target google-project-id/.js/target google-project-id-pureconfig/.jvm/target project/target
+        run: mkdir -p target .js/target gcp-types/.js/target gcp-types/.jvm/target .jvm/target .native/target google-project-id/.jvm/target google-auth/.jvm/target google-project-id/.js/target google-project-id-pureconfig/.jvm/target google-bigquery/.jvm/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: tar cf targets.tar target .js/target gcp-types/.js/target gcp-types/.jvm/target .jvm/target .native/target google-project-id/.jvm/target google-auth/.jvm/target google-project-id/.js/target google-project-id-pureconfig/.jvm/target project/target
+        run: tar cf targets.tar target .js/target gcp-types/.js/target gcp-types/.jvm/target .jvm/target .native/target google-project-id/.jvm/target google-auth/.jvm/target google-project-id/.js/target google-project-id-pureconfig/.jvm/target google-bigquery/.jvm/target project/target
 
       - name: Upload target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Permutive
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.permutive.google.bigquery.rest.models.job.queryparameters
 
 import com.permutive.google.bigquery.models.SQLType
@@ -6,47 +22,57 @@ import io.circe.{Decoder, Encoder}
 
 import scala.collection.immutable.ListMap
 
-/**
-  * Represents a BigQuery query parameter.
+/** Represents a BigQuery query parameter.
   *
-  * This class does not necessarily need to be constructed directly: use [[QueryParameterEncoder]] to derive encoders
-  * to a [[QueryParameter]] from a generic type.
+  * This class does not necessarily need to be constructed directly: use
+  * [[QueryParameterEncoder]] to derive encoders to a [[QueryParameter]] from a
+  * generic type.
   */
-case class QueryParameter(name: Option[String], parameterType: QueryParameterType, parameterValue: QueryParameterValue)
+case class QueryParameter(
+    name: Option[String],
+    parameterType: QueryParameterType,
+    parameterValue: QueryParameterValue
+)
 
 object QueryParameter {
 
-  /** Used to construct a singular [[QueryParameter]] without a [[QueryParameterEncoder]]. */
+  /** Used to construct a singular [[QueryParameter]] without a
+    * [[QueryParameterEncoder]].
+    */
   def scalar(name: String, `type`: SQLType, value: String): QueryParameter =
     QueryParameter(
       Some(name),
       QueryParameterType.singular(`type`),
-      QueryParameterValue.singular(value),
+      QueryParameterValue.singular(value)
     )
 
   implicit val encoder: Encoder.AsObject[QueryParameter] = deriveEncoder
-  implicit val decoder: Decoder[QueryParameter]          = deriveDecoder
+  implicit val decoder: Decoder[QueryParameter] = deriveDecoder
 }
 
 case class QueryParameterValue(
-  value: Option[String],
-  arrayValues: Option[List[QueryParameterValue]],
-  structValues: Option[ListMapLike[String, QueryParameterValue]],
+    value: Option[String],
+    arrayValues: Option[List[QueryParameterValue]],
+    structValues: Option[ListMapLike[String, QueryParameterValue]]
 )
 
 object QueryParameterValue {
 
   def singular(s: String): QueryParameterValue =
-    QueryParameterValue(value = Some(s), arrayValues = None, structValues = None)
+    QueryParameterValue(
+      value = Some(s),
+      arrayValues = None,
+      structValues = None
+    )
 
   implicit val encoder: Encoder.AsObject[QueryParameterValue] = deriveEncoder
-  implicit val decoder: Decoder[QueryParameterValue]          = deriveDecoder
+  implicit val decoder: Decoder[QueryParameterValue] = deriveDecoder
 }
 
 case class QueryParameterType(
-  `type`: SQLType,
-  arrayType: Option[QueryParameterType],
-  structTypes: Option[List[StructType]],
+    `type`: SQLType,
+    arrayType: Option[QueryParameterType],
+    structTypes: Option[List[StructType]]
 )
 
 object QueryParameterType {
@@ -55,14 +81,14 @@ object QueryParameterType {
     QueryParameterType(`type` = sqlType, arrayType = None, structTypes = None)
 
   implicit val encoder: Encoder.AsObject[QueryParameterType] = deriveEncoder
-  implicit val decoder: Decoder[QueryParameterType]          = deriveDecoder
+  implicit val decoder: Decoder[QueryParameterType] = deriveDecoder
 }
 
 case class StructType(name: Option[String], `type`: QueryParameterType)
 
 object StructType {
   implicit val encoder: Encoder.AsObject[StructType] = deriveEncoder
-  implicit val decoder: Decoder[StructType]          = deriveDecoder
+  implicit val decoder: Decoder[StructType] = deriveDecoder
 }
 
 case class ListMapLike[A, B](keyValues: List[(A, B)])

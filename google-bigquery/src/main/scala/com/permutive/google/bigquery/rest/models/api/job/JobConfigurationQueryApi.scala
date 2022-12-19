@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Permutive
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.permutive.google.bigquery.rest.models.api.job
 
 import cats.data.NonEmptyList
@@ -20,37 +36,41 @@ sealed private[rest] trait JobConfigurationQueryApi {
 object JobConfigurationQueryApi {
 
   implicit val encoder: Encoder.AsObject[JobConfigurationQueryApi] = {
-    case writeTable: JobConfigurationQueryWriteTableApi => writeTable.asJsonObject
-    case basic: JobConfigurationQueryBasicApi           => basic.asJsonObject
+    case writeTable: JobConfigurationQueryWriteTableApi =>
+      writeTable.asJsonObject
+    case basic: JobConfigurationQueryBasicApi => basic.asJsonObject
   }
 
   // Want to decode the most specific that we can first
   implicit val decoder: Decoder[JobConfigurationQueryApi] =
     List[Decoder[JobConfigurationQueryApi]](
       JobConfigurationQueryWriteTableApi.decoder.widen,
-      JobConfigurationQueryBasicApi.decoder.widen,
+      JobConfigurationQueryBasicApi.decoder.widen
     ).reduceLeft(_.or(_))
 }
 
 final private[rest] case class JobConfigurationQueryBasicApi(
-  query: Query,
-  useLegacySql: Boolean,
-  queryParameters: Option[NonEmptyList[QueryParameter]],
+    query: Query,
+    useLegacySql: Boolean,
+    queryParameters: Option[NonEmptyList[QueryParameter]]
 ) extends JobConfigurationQueryApi
 
 private[rest] object JobConfigurationQueryBasicApi {
-  implicit val encoder: Encoder.AsObject[JobConfigurationQueryBasicApi] = deriveEncoder
-  implicit val decoder: Decoder[JobConfigurationQueryBasicApi]          = deriveDecoder
+  implicit val encoder: Encoder.AsObject[JobConfigurationQueryBasicApi] =
+    deriveEncoder
+  implicit val decoder: Decoder[JobConfigurationQueryBasicApi] = deriveDecoder
 }
 
 final private[rest] case class JobConfigurationQueryWriteTableApi(
-  query: Query,
-  writeDisposition: WriteDisposition,
-  destinationTable: TableReferenceApi,
-  useLegacySql: Boolean,
+    query: Query,
+    writeDisposition: WriteDisposition,
+    destinationTable: TableReferenceApi,
+    useLegacySql: Boolean
 ) extends JobConfigurationQueryApi
 
 private[rest] object JobConfigurationQueryWriteTableApi {
-  implicit val encoder: Encoder.AsObject[JobConfigurationQueryWriteTableApi] = deriveEncoder
-  implicit val decoder: Decoder[JobConfigurationQueryWriteTableApi]          = deriveDecoder
+  implicit val encoder: Encoder.AsObject[JobConfigurationQueryWriteTableApi] =
+    deriveEncoder
+  implicit val decoder: Decoder[JobConfigurationQueryWriteTableApi] =
+    deriveDecoder
 }

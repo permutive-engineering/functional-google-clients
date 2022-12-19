@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Permutive
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.permutive.google.bigquery.datatransfer
 
 import cats.data.NonEmptyList
@@ -29,9 +45,9 @@ import org.http4s.{EntityDecoder, EntityEncoder, Request, Uri}
 // In our testing was found to be non-functional.
 
 class HttpBigQueryDataTransfer[F[_]: HttpMethods](
-  projectName: BigQueryProjectName,
-  dataTransferBaseUri: Uri,
-  location: Location,
+    projectName: BigQueryProjectName,
+    dataTransferBaseUri: Uri,
+    location: Location
 )(implicit F: Concurrent[F])
     extends BigQueryDataTransfer[F] {
   object Dsl extends Http4sDsl[F] with Http4sClientDsl[F]
@@ -51,25 +67,30 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
   private def transferConfigUri(configId: ConfigId): Uri =
     transferConfigsUri / configId.value
 
-  private def sendAuthorizedRequest[T](request: Request[F], description: => String)(implicit
-    ed: EntityDecoder[F, T],
+  private def sendAuthorizedRequest[T](
+      request: Request[F],
+      description: => String
+  )(implicit
+      ed: EntityDecoder[F, T]
   ): F[T] =
     HttpMethods[F].sendAuthorizedRequest[T](request, description)
 
-  private def sendAuthorizedGet[T](uri: Uri, description: => String)(implicit ed: EntityDecoder[F, T]): F[T] =
+  private def sendAuthorizedGet[T](uri: Uri, description: => String)(implicit
+      ed: EntityDecoder[F, T]
+  ): F[T] =
     HttpMethods[F].sendAuthorizedGet[T](uri, description)
 
   // WARNING: This will check to see if the query already exists which may be very slow
   // See `findScheduledQueries` for what it will do
   // Google does not check if the query already exists so we should prevent double creation
   override def scheduleQuery(
-    displayName: DisplayName,
-    query: Query,
-    schedule: Schedule,
-    destinationDataset: DatasetId,
-    destinationTableName: TableId,
-    writeDisposition: WriteDisposition,
-    partitioningFieldName: Option[Field.Name] = None,
+      displayName: DisplayName,
+      query: Query,
+      schedule: Schedule,
+      destinationDataset: DatasetId,
+      destinationTableName: TableId,
+      writeDisposition: WriteDisposition,
+      partitioningFieldName: Option[Field.Name] = None
   ): F[Unit] =
     scheduleQuery(
       ScheduleQueryRequest(
@@ -79,28 +100,44 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
         destinationDataset,
         destinationTableName,
         writeDisposition,
-        partitioningFieldName,
-      ),
+        partitioningFieldName
+      )
     )
 
   // WARNING: This will check to see if the query already exists which may be very slow
   // See `findScheduledQueries` for what it will do
   // Google does not check if the query already exists so we should prevent double creation
-  override def scheduleQuery(scheduleQueryRequest: ScheduleQueryRequest): F[Unit] =
-    raiseIfScheduleExists(scheduleQueryRequest.displayName, scheduleQueryRequest.destinationDataset) >>
+  override def scheduleQuery(
+      scheduleQueryRequest: ScheduleQueryRequest
+  ): F[Unit] =
+    raiseIfScheduleExists(
+      scheduleQueryRequest.displayName,
+      scheduleQueryRequest.destinationDataset
+    ) >>
       sendUncheckedScheduleRequest(scheduleQueryRequest)
 
-  private def raiseIfScheduleExists(displayName: DisplayName, destinationDataset: DatasetId): F[Unit] =
+  private def raiseIfScheduleExists(
+      displayName: DisplayName,
+      destinationDataset: DatasetId
+  ): F[Unit] =
     for {
       exists <- findScheduledQueries(displayName, destinationDataset)
       _ <- raiseIfNonEmpty[ScheduledQuery](
         exists,
         sqs =>
-          ScheduledQueryExistsException(projectName, location, displayName, destinationDataset, sqs.map(_.configId)),
+          ScheduledQueryExistsException(
+            projectName,
+            location,
+            displayName,
+            destinationDataset,
+            sqs.map(_.configId)
+          )
       )
     } yield ()
 
-  private def sendUncheckedScheduleRequest(req: ScheduleQueryRequest): F[Unit] = {
+  private def sendUncheckedScheduleRequest(
+      req: ScheduleQueryRequest
+  ): F[Unit] = {
     val requestBody: Json =
       ScheduleQueryRequestApi(
         req.displayName,
@@ -109,9 +146,9 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
           req.query,
           Some(req.destinationTableName),
           Some(req.writeDisposition),
-          req.partitioningFieldName,
+          req.partitioningFieldName
         ),
-        req.schedule,
+        req.schedule
       ).asJson
 
     sendAuthorizedRequest[TransferConfigsResponseApi](
@@ -125,16 +162,18 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
   // Google does not check if the query already exists so we should prevent double creation
   override def scheduleQueries(requests: List[ScheduleQueryRequest]): F[Unit] =
     for {
-      _      <- raiseIfDuplicateRequests(requests)
+      _ <- raiseIfDuplicateRequests(requests)
       exists <- getScheduledQueryIdentities.map(_.toSet)
-      _      <- raiseIfAnyScheduleExists(requests, exists)
-      _      <- requests.traverse(sendUncheckedScheduleRequest).void
+      _ <- raiseIfAnyScheduleExists(requests, exists)
+      _ <- requests.traverse(sendUncheckedScheduleRequest).void
     } yield ()
 
-  override def getScheduledQuery(configId: ConfigId): F[Option[ScheduledQuery]] =
+  override def getScheduledQuery(
+      configId: ConfigId
+  ): F[Option[ScheduledQuery]] =
     sendAuthorizedGet[TransferConfigsResponseApi](
       transferConfigUri(configId),
-      s"get a scheduled query with config ID `$configId`",
+      s"get a scheduled query with config ID `$configId`"
     ).map {
       case sq: ScheduledQueryResponseApi => ScheduledQuery.fromApi(sq).some
       case _                             => None
@@ -144,40 +183,47 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
   override def getScheduledQueries: F[List[ScheduledQuery]] =
     getConvertScheduledQueries(
       identity,
-      "get scheduled queries",
+      "get scheduled queries"
     )
 
   // WARNING: THIS IS NOT PERFORMANT
   // It fetches _every_ transfer (which could require multiple requests) and manually searches them all for matching entries
   // At time of writing [Ben: 2019-02-12] Google does not expose any method of filtering results in the API (that I can see)
   override def findScheduledQueries(
-    displayName: DisplayName,
-    destinationDataset: DatasetId,
+      displayName: DisplayName,
+      destinationDataset: DatasetId
   ): F[List[ScheduledQuery]] = {
     val filter: ScheduledQueryResponseApi => Boolean =
-      sq => sq.displayName === displayName && sq.destinationDatasetId === destinationDataset
+      sq =>
+        sq.displayName === displayName && sq.destinationDatasetId === destinationDataset
 
     getConvertScheduledQueries(
       identity,
       s"get scheduled queries with display name `$displayName` and destination dataset `$destinationDataset`",
-      Some(filter),
+      Some(filter)
     )
   }
 
   override def updateScheduledQuery(
-    configId: ConfigId,
-    query: Query,
-    destinationTableName: Option[TableId],
-    writeDisposition: Option[WriteDisposition],
-    partitioningFieldName: Option[Field.Name]
+      configId: ConfigId,
+      query: Query,
+      destinationTableName: Option[TableId],
+      writeDisposition: Option[WriteDisposition],
+      partitioningFieldName: Option[Field.Name]
   ): F[Unit] = {
     val requestBody = ScheduleQueryPatchApi(
-      ScheduleQueryParamsApi(query, destinationTableName, writeDisposition, partitioningFieldName)
+      ScheduleQueryParamsApi(
+        query,
+        destinationTableName,
+        writeDisposition,
+        partitioningFieldName
+      )
     )
     sendAuthorizedRequest[TransferConfigsResponseApi](
       PATCH(
         requestBody,
-        (transferConfigsUri / configId.value).withQueryParam("updateMask", "params")
+        (transferConfigsUri / configId.value)
+          .withQueryParam("updateMask", "params")
       ),
       "update scheduled query"
     ).void
@@ -186,20 +232,26 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
   private def getScheduledQueryIdentities: F[List[ScheduledQueryIdentity]] =
     getConvertScheduledQueries(
       ScheduledQueryIdentity.fromScheduledQuery,
-      "get scheduled query identities",
+      "get scheduled query identities"
     )
 
   private def raiseIfAnyScheduleExists(
-    requests: List[ScheduleQueryRequest],
-    schedulesPresent: Set[ScheduledQueryIdentity],
+      requests: List[ScheduleQueryRequest],
+      schedulesPresent: Set[ScheduledQueryIdentity]
   ): F[Unit] = {
-    val requestsIdents = requests.map(ScheduledQueryIdentity.fromScheduleQueryRequest).toSet
+    val requestsIdents =
+      requests.map(ScheduledQueryIdentity.fromScheduleQueryRequest).toSet
     val alreadyPresent = requestsIdents.intersect(schedulesPresent).toList
 
-    raiseIfNonEmpty[ScheduledQueryIdentity](alreadyPresent, ScheduledQueriesExistException(projectName, location, _))
+    raiseIfNonEmpty[ScheduledQueryIdentity](
+      alreadyPresent,
+      ScheduledQueriesExistException(projectName, location, _)
+    )
   }
 
-  private def raiseIfDuplicateRequests(requests: List[ScheduleQueryRequest]): F[Unit] = {
+  private def raiseIfDuplicateRequests(
+      requests: List[ScheduleQueryRequest]
+  ): F[Unit] = {
     val dupes: List[ScheduledQueryIdentity] =
       requests
         .map(ScheduledQueryIdentity.fromScheduleQueryRequest)
@@ -212,43 +264,50 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
     raiseIfNonEmpty(dupes, DuplicateScheduledQueryRequestException)
   }
 
-  private def raiseIfNonEmpty[T](ts: List[T], raise: NonEmptyList[T] => Throwable): F[Unit] =
+  private def raiseIfNonEmpty[T](
+      ts: List[T],
+      raise: NonEmptyList[T] => Throwable
+  ): F[Unit] =
     NonEmptyList.fromList(ts).fold(F.unit)(nel => F.raiseError(raise(nel)))
 
   private def getConvertScheduledQueries[T](
-    convert: ScheduledQuery => T,
-    description: => String,
-    filter: Option[ScheduledQueryResponseApi => Boolean] = None,
+      convert: ScheduledQuery => T,
+      description: => String,
+      filter: Option[ScheduledQueryResponseApi => Boolean] = None
   ): F[List[T]] =
-    collectAllPages[ListTransferConfigsResponseApi, ScheduledQueryResponseApi, T](
+    collectAllPages[
+      ListTransferConfigsResponseApi,
+      ScheduledQueryResponseApi,
+      T
+    ](
       transferConfigsUri,
       _.extractScheduledQueries,
       api => convert(ScheduledQuery.fromApi(api)),
       description,
-      filter,
+      filter
     )
 
   private def collectAllPages[Api <: PaginatedApi, T, U](
-    baseUri: Uri,
-    extract: Api => List[T],
-    convert: T => U,
-    description: => String,
-    filter: Option[T => Boolean],
+      baseUri: Uri,
+      extract: Api => List[T],
+      convert: T => U,
+      description: => String,
+      filter: Option[T => Boolean]
   )(implicit
-    ed: EntityDecoder[F, Api],
+      ed: EntityDecoder[F, Api]
   ): F[List[U]] =
     collectRemainingPages(baseUri, extract, convert, description, filter)
 
   private def collectRemainingPages[Api <: PaginatedApi, T, U](
-    baseUri: Uri,
-    extract: Api => List[T],
-    convert: T => U,
-    description: => String,
-    filter: Option[T => Boolean],
-    pageToken: Option[String] = None,
-    acc: List[U] = Nil,
+      baseUri: Uri,
+      extract: Api => List[T],
+      convert: T => U,
+      description: => String,
+      filter: Option[T => Boolean],
+      pageToken: Option[String] = None,
+      acc: List[U] = Nil
   )(implicit
-    ed: EntityDecoder[F, Api],
+      ed: EntityDecoder[F, Api]
   ): F[List[U]] = {
     val uri = pageToken.fold(baseUri)(baseUri.withQueryParam("pageToken", _))
 
@@ -256,12 +315,24 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
       res <- sendAuthorizedGet[Api](uri, description)
       newAcc = acc ::: convertAndFilter(extract(res), convert, filter)
       fin <- res.nextPageToken.fold(newAcc.pure[F])(tok =>
-        collectRemainingPages(baseUri, extract, convert, description, filter, Some(tok), newAcc),
+        collectRemainingPages(
+          baseUri,
+          extract,
+          convert,
+          description,
+          filter,
+          Some(tok),
+          newAcc
+        )
       ) // If the token exists it means there are subsequent pages
     } yield fin
   }
 
-  private def convertAndFilter[T, U](results: List[T], convert: T => U, filter: Option[T => Boolean]): List[U] =
+  private def convertAndFilter[T, U](
+      results: List[T],
+      convert: T => U,
+      filter: Option[T => Boolean]
+  ): List[U] =
     filter.fold(results.map(convert)) { filt =>
       results.collect { case t if filt(t) => convert(t) }
     }
@@ -270,42 +341,46 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
 
 object HttpBigQueryDataTransfer {
 
-  private[this] val dataTransferUri = Uri.unsafeFromString("https://bigquerydatatransfer.googleapis.com/v1")
+  private[this] val dataTransferUri =
+    Uri.unsafeFromString("https://bigquerydatatransfer.googleapis.com/v1")
 
   def impl[F[_]: Temporal](
-    projectName: BigQueryProjectName,
-    tokenF: F[UserAccountAccessToken],
-    location: Location,
-    client: Client[F],
-    retryConfiguration: Option[RetryConfiguration] = None,
+      projectName: BigQueryProjectName,
+      tokenF: F[UserAccountAccessToken],
+      location: Location,
+      client: Client[F],
+      retryConfiguration: Option[RetryConfiguration] = None
   ): BigQueryDataTransfer[F] = {
-    implicit val httpMethods: HttpMethods[F] = HttpMethods.impl(client, tokenF.widen, retryConfiguration)
+    implicit val httpMethods: HttpMethods[F] =
+      HttpMethods.impl(client, tokenF.widen, retryConfiguration)
 
     impl(projectName, location)
   }
 
   def impl[F[_]: Concurrent: HttpMethods](
-    projectName: BigQueryProjectName,
-    location: Location,
+      projectName: BigQueryProjectName,
+      location: Location
   ): BigQueryDataTransfer[F] =
     new HttpBigQueryDataTransfer(
       projectName,
       dataTransferUri,
-      location,
+      location
     )
 
   def create[F[_]: Sync: Temporal](
-    projectName: BigQueryProjectName,
-    tokenF: F[UserAccountAccessToken],
-    location: Location,
-    client: Client[F],
-    retryConfiguration: Option[RetryConfiguration] = None,
+      projectName: BigQueryProjectName,
+      tokenF: F[UserAccountAccessToken],
+      location: Location,
+      client: Client[F],
+      retryConfiguration: Option[RetryConfiguration] = None
   ): F[BigQueryDataTransfer[F]] =
-    Sync[F].pure(impl(projectName, tokenF, location, client, retryConfiguration))
+    Sync[F].pure(
+      impl(projectName, tokenF, location, client, retryConfiguration)
+    )
 
   def create[F[_]: Sync: Temporal: HttpMethods](
-    projectName: BigQueryProjectName,
-    location: Location,
+      projectName: BigQueryProjectName,
+      location: Location
   ): F[BigQueryDataTransfer[F]] =
     Sync[F].pure(impl(projectName, location))
 

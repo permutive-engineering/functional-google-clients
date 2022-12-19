@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Permutive
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.permutive.google.bigquery.rest.models
 
 import cats.data.NonEmptyList
@@ -10,7 +26,7 @@ import com.permutive.google.bigquery.rest.models.api.job._
 import com.permutive.google.bigquery.rest.models.api.job.statistics.{
   BytesProcessedAccuracy,
   DryQueryStatisticsApi,
-  DryRunQueryJobStatisticsApi,
+  DryRunQueryJobStatisticsApi
 }
 import com.permutive.google.bigquery.rest.models.job.JobState
 import com.permutive.google.bigquery.rest.models.job.NewTypes._
@@ -21,15 +37,15 @@ import com.permutive.google.bigquery.rest.models.job.queryparameters.{
   QueryParameter,
   QueryParameterType,
   QueryParameterValue,
-  StructType,
+  StructType
 }
 
 object TestData {
 
-  val bqProject             = BigQueryProjectName("test-project")
-  val bqDataset             = DatasetId("test-dataset")
-  val testTable             = TableId("table")
-  val testQuery             = Query("SELECT * FROM foo WHERE bar = 1")
+  val bqProject = BigQueryProjectName("test-project")
+  val bqDataset = DatasetId("test-dataset")
+  val testTable = TableId("table")
+  val testQuery = Query("SELECT * FROM foo WHERE bar = 1")
   val parametrisedTestQuery = Query("SELECT * FROM foo WHERE bar = @x")
 
   val writeDisposition = WriteDisposition.WriteTruncate
@@ -37,7 +53,7 @@ object TestData {
   val tableReference = TableReferenceApi(
     bqProject,
     bqDataset,
-    testTable,
+    testTable
   )
 
   val useLegactSql = false
@@ -46,64 +62,70 @@ object TestData {
     testQuery,
     writeDisposition,
     tableReference,
-    useLegacySql = useLegactSql,
+    useLegacySql = useLegactSql
   )
 
   val jobQueryConfigBasicApi = JobConfigurationQueryBasicApi(
     testQuery,
     useLegacySql = useLegactSql,
-    queryParameters = None,
+    queryParameters = None
   )
 
-  val jobId    = JobId("my-job")
+  val jobId = JobId("my-job")
   val location = Location("us-1")
 
   val jobReferenceApi = JobReferenceApi(
     jobId,
     Some(location),
-    bqProject,
+    bqProject
   )
 
-  val jobConfigurationApiQueryWriteTable       = JobConfigurationApi.Query(jobQueryConfigWriteTableApi)
-  val jobConfigurationApiQueryWriteTableDryRun = jobConfigurationApiQueryWriteTable.copy(dryRun = Some(true))
+  val jobConfigurationApiQueryWriteTable =
+    JobConfigurationApi.Query(jobQueryConfigWriteTableApi)
+  val jobConfigurationApiQueryWriteTableDryRun =
+    jobConfigurationApiQueryWriteTable.copy(dryRun = Some(true))
 
-  val jobConfigurationQueryBasicNoDryRun = JobConfigurationApi.Query(jobQueryConfigBasicApi)
-  val jobConfigurationQueryBasicDryRun   = jobConfigurationQueryBasicNoDryRun.copy(dryRun = Some(true))
+  val jobConfigurationQueryBasicNoDryRun =
+    JobConfigurationApi.Query(jobQueryConfigBasicApi)
+  val jobConfigurationQueryBasicDryRun =
+    jobConfigurationQueryBasicNoDryRun.copy(dryRun = Some(true))
 
   val createQueryWriteTableJobRequestApi = CreateQueryJobRequestApi(
     jobConfigurationApiQueryWriteTable,
-    jobReferenceApi,
+    jobReferenceApi
   )
 
   val createQueryBasicJobRequestApiNoDryRun = CreateQueryJobRequestApi(
     jobConfigurationQueryBasicNoDryRun,
-    jobReferenceApi,
+    jobReferenceApi
   )
   val createQueryBasicJobRequestApiDryRun =
-    createQueryBasicJobRequestApiNoDryRun.copy(configuration = jobConfigurationQueryBasicDryRun)
+    createQueryBasicJobRequestApiNoDryRun.copy(configuration =
+      jobConfigurationQueryBasicDryRun
+    )
 
   val createCopyJobRequestApi = CreateQueryJobRequestApi(
     JobConfigurationApi.Copy,
-    jobReferenceApi,
+    jobReferenceApi
   )
 
   object Errors {
     val errorProtoApi1 = ErrorProtoApi(
       "reason-1",
       Some("location-1"),
-      "message-1",
+      "message-1"
     )
 
     val errorProtoApi2 = ErrorProtoApi(
       "reason-2",
       Some("location-2"),
-      "message-2",
+      "message-2"
     )
 
     val errorProtoApi3 = ErrorProtoApi(
       "reason-3",
       Some("location-3"),
-      "message-3",
+      "message-3"
     )
   }
 
@@ -111,43 +133,43 @@ object TestData {
     val successfulJobStatus = JobStatusApi(
       JobState.Done,
       None,
-      None,
+      None
     )
 
     val failedJobStatus = JobStatusApi(
       JobState.Done,
       Some(Errors.errorProtoApi1),
-      Some(List(Errors.errorProtoApi2, Errors.errorProtoApi3)),
+      Some(List(Errors.errorProtoApi2, Errors.errorProtoApi3))
     )
 
     val failedJobStatusEmptyList = JobStatusApi(
       JobState.Done,
       Some(Errors.errorProtoApi1),
-      Some(Nil),
+      Some(Nil)
     )
 
     val failedJobStatusNoList = JobStatusApi(
       JobState.Done,
       Some(Errors.errorProtoApi1),
-      None,
+      None
     )
 
     val completedJobStatusListNoError = JobStatusApi(
       JobState.Done,
       None,
-      Some(List(Errors.errorProtoApi2, Errors.errorProtoApi3)),
+      Some(List(Errors.errorProtoApi2, Errors.errorProtoApi3))
     )
 
     val runningJobStatus = JobStatusApi(
       JobState.Running,
       None,
-      None,
+      None
     )
 
     val pendingJobStatus = JobStatusApi(
       JobState.Pending,
       None,
-      None,
+      None
     )
 
   }
@@ -164,7 +186,7 @@ object TestData {
       jobConfigurationApiQueryWriteTable,
       kind,
       etag,
-      selfLink,
+      selfLink
     )
 
     val failedJobResponseApi = QueryJobResponseApi(
@@ -173,7 +195,7 @@ object TestData {
       jobConfigurationApiQueryWriteTable,
       kind,
       etag,
-      selfLink,
+      selfLink
     )
 
     val runningJobResponseApi = QueryJobResponseApi(
@@ -182,7 +204,7 @@ object TestData {
       jobConfigurationApiQueryWriteTable,
       kind,
       etag,
-      selfLink,
+      selfLink
     )
 
     val pendingJobResponseApi = QueryJobResponseApi(
@@ -191,7 +213,7 @@ object TestData {
       jobConfigurationApiQueryWriteTable.copy(),
       kind,
       etag,
-      selfLink,
+      selfLink
     )
   }
 
@@ -204,7 +226,7 @@ object TestData {
       Some(SchemaApi(NonEmptyList.one(Fields.floatNullable))),
       cacheHit = false,
       "SELECT",
-      Some(NonEmptyList.one(tableReference)),
+      Some(NonEmptyList.one(tableReference))
     )
 
   }
@@ -217,7 +239,7 @@ object TestData {
       dryQueryStatisticsWithReferenceAndSchema,
       Int64Value(1567513492669L),
       None,
-      None,
+      None
     )
 
   }
@@ -225,7 +247,9 @@ object TestData {
   object DryRunQueryJobResponse {
     import DryRunQueryJobStatistics._
 
-    val selfLink = Some("https://www.googleapis.com/bigquery/v2/projects/test-project/jobs/?location=us-1")
+    val selfLink = Some(
+      "https://www.googleapis.com/bigquery/v2/projects/test-project/jobs/?location=us-1"
+    )
 
     val successfulDryRunJobResponseApi = DryRunQueryJobResponseApi(
       JobStatuses.successfulJobStatus,
@@ -234,7 +258,7 @@ object TestData {
       kind,
       etag,
       selfLink,
-      noEndTimesDryRunStatistics,
+      noEndTimesDryRunStatistics
     )
 
   }
@@ -244,13 +268,31 @@ object TestData {
     import com.permutive.google.bigquery.models.table.Field._
 
     val boolsWithDescription: Field =
-      Field(Name("bools-with-desc"), SQLType.Boolean, Some(Mode.Repeated), Some("array of booleans"), None)
+      Field(
+        Name("bools-with-desc"),
+        SQLType.Boolean,
+        Some(Mode.Repeated),
+        Some("array of booleans"),
+        None
+      )
 
     val stringRequired: Field =
-      Field(Name("string-required"), SQLType.String, Some(Mode.Required), None, None)
+      Field(
+        Name("string-required"),
+        SQLType.String,
+        Some(Mode.Required),
+        None,
+        None
+      )
 
     val floatNullable: Field =
-      Field(Name("float-nullable"), SQLType.Float, Some(Mode.Nullable), Some("nullable float"), None)
+      Field(
+        Name("float-nullable"),
+        SQLType.Float,
+        Some(Mode.Nullable),
+        Some("nullable float"),
+        None
+      )
 
     val noMode: Field =
       Field(Name("no-mode"), SQLType.String, None, None, None)
@@ -263,9 +305,15 @@ object TestData {
         None,
         Some(
           NonEmptyList.of(
-            Field(Name("inner-int"), SQLType.Integer, Some(Mode.Required), None, None),
-          ),
-        ),
+            Field(
+              Name("inner-int"),
+              SQLType.Integer,
+              Some(Mode.Required),
+              None,
+              None
+            )
+          )
+        )
       )
 
   }
@@ -276,21 +324,34 @@ object TestData {
 
     val schema = SchemaApi(
       NonEmptyList
-        .of(Fields.boolsWithDescription, Fields.stringRequired, Fields.floatNullable, Fields.nested, Fields.noMode),
+        .of(
+          Fields.boolsWithDescription,
+          Fields.stringRequired,
+          Fields.floatNullable,
+          Fields.nested,
+          Fields.noMode
+        )
     )
 
     val totalRows = UInt64Value(123456L)
 
     val pageToken = PageToken("next-page-token")
 
-    val row1 = Json.obj("col1" -> Json.fromString("foo"), "col2" -> Json.arr(Json.fromInt(1), Json.fromInt(2)))
-    val row2 = Json.obj("col1" -> Json.fromString("bar"), "col2" -> Json.arr(Json.fromInt(3), Json.fromInt(4)))
+    val row1 = Json.obj(
+      "col1" -> Json.fromString("foo"),
+      "col2" -> Json.arr(Json.fromInt(1), Json.fromInt(2))
+    )
+    val row2 = Json.obj(
+      "col1" -> Json.fromString("bar"),
+      "col2" -> Json.arr(Json.fromInt(3), Json.fromInt(4))
+    )
 
     val rows: List[Json] = List(row1, row2)
 
     val totalBytesProcessed = Int64Value(999L)
 
-    val errors: List[ErrorProtoApi] = List(Errors.errorProtoApi1, Errors.errorProtoApi2)
+    val errors: List[ErrorProtoApi] =
+      List(Errors.errorProtoApi1, Errors.errorProtoApi2)
 
     val numDmlAffectedRows = Int64Value(0L)
 
@@ -306,11 +367,14 @@ object TestData {
       jobComplete = true,
       Some(errors),
       cacheHit = Some(true),
-      Some(numDmlAffectedRows),
+      Some(numDmlAffectedRows)
     )
 
     val jobQueryResultsCompleteMissingSchemaBytes =
-      jobQueryResultCompleteAllFields.copy(schema = None, totalBytesProcessed = None)
+      jobQueryResultCompleteAllFields.copy(
+        schema = None,
+        totalBytesProcessed = None
+      )
 
     val jobQueryResultDmlComplete = JobQueryResultApi(
       kind,
@@ -324,7 +388,7 @@ object TestData {
       jobComplete = true,
       None,
       cacheHit = Some(true),
-      Some(numDmlAffectedRows),
+      Some(numDmlAffectedRows)
     )
 
     val jobQueryResultIncompleteAllFields =
@@ -342,7 +406,7 @@ object TestData {
       jobComplete = false,
       Some(errors),
       None,
-      None,
+      None
     )
 
     val jobQueryResultCompleteNoErrors =
@@ -358,7 +422,10 @@ object TestData {
       jobQueryResultCompleteNoDml.copy(pageToken = None)
 
     val jobQueryResultCompleteNoRowsNoNextPageNoDml =
-      jobQueryResultCompleteNoNextPageNoDml.copy(rows = None, totalRows = Some(UInt64Value(0L)))
+      jobQueryResultCompleteNoNextPageNoDml.copy(
+        rows = None,
+        totalRows = Some(UInt64Value(0L))
+      )
 
     val jobQueryResultCompleteNoRowsNoNextPageNoDmlNoErrors =
       jobQueryResultCompleteNoRowsNoNextPageNoDml.copy(errors = None)
@@ -384,19 +451,25 @@ object TestData {
                   `type` = QueryParameterType(
                     `type` = SQLType.Int64,
                     arrayType = None,
-                    structTypes = None,
-                  ),
+                    structTypes = None
+                  )
                 ),
                 StructType(
                   name = Some("qux"),
                   `type` = QueryParameterType(
                     `type` = SQLType.Array,
-                    arrayType = Some(QueryParameterType(`type` = SQLType.String, arrayType = None, structTypes = None)),
-                    structTypes = None,
-                  ),
-                ),
-              ),
-            ),
+                    arrayType = Some(
+                      QueryParameterType(
+                        `type` = SQLType.String,
+                        arrayType = None,
+                        structTypes = None
+                      )
+                    ),
+                    structTypes = None
+                  )
+                )
+              )
+            )
           ),
           parameterValue = QueryParameterValue(
             value = None,
@@ -407,21 +480,27 @@ object TestData {
                   "baz" -> QueryParameterValue(
                     value = Some("1"),
                     arrayValues = None,
-                    structValues = None,
+                    structValues = None
                   ),
                   "qux" -> QueryParameterValue(
                     value = None,
                     arrayValues = Some(
-                      List(QueryParameterValue(value = Some("hello"), arrayValues = None, structValues = None)),
+                      List(
+                        QueryParameterValue(
+                          value = Some("hello"),
+                          arrayValues = None,
+                          structValues = None
+                        )
+                      )
                     ),
-                    structValues = None,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
+                    structValues = None
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   )
 }
