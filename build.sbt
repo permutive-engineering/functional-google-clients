@@ -49,9 +49,16 @@ lazy val gcpTypes = crossProject(JVMPlatform, JSPlatform)
   .in(file("gcp-types"))
   .settings(
     name := "gcp-types",
+    scalacOptions := scalacOptions.value
+      .filterNot(_ == "-source:3.0-migration"),
     libraryDependencies ++= Seq(
-      "eu.timepit" %%% "refined" % Refined
-    )
+      "org.typelevel" %%% "literally" % "1.1.0"
+    ),
+    libraryDependencies ++= {
+      if (tlIsScala3.value) Seq.empty
+      else
+        Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
+    }
   )
 
 lazy val googleAuth = crossProject(JVMPlatform)

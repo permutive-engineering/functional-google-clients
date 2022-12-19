@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-package com.permutive.google.gcp
+package com.permutive.google.gcp.types
 
-import eu.timepit.refined.W
-import eu.timepit.refined.api.{Refined, RefinedTypeOps}
-import eu.timepit.refined.string.MatchesRegex
+import java.util.regex.Pattern
 
-package object types {
+case class ProjectId private (value: String) extends AnyVal
+
+object ProjectId {
   /* From https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin:
    *
    * The project ID must be a unique string of 6 to 30 lowercase letters, digits, or hyphens. It must start with a
    * letter, and cannot have a trailing hyphen.
    */
-  type ProjectIdRefinement = MatchesRegex[W.`"[a-z][a-z0-9-]{5,29}(?<!-)"`.T]
-  type ProjectId = String Refined ProjectIdRefinement
-  object ProjectId extends RefinedTypeOps[ProjectId, String]
+  private val regex: Pattern = "^[a-z][a-z0-9-]{5,29}(?<!-)".r.pattern
+
+  private[types] def onError(string: String) =
+    s"invalid project ID '$string' - must match ${ProjectId.regex.pattern()}"
+
+  def fromString(string: String): Option[ProjectId] =
+    if (regex.matcher(string).matches()) Some(new ProjectId(string)) else None
+
+  def from(string: String): Either[String, ProjectId] =
+    fromString(string).toRight(onError(string))
 }
