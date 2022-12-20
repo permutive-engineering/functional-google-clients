@@ -1,8 +1,8 @@
-package com.permutive.google.gcp.types
+package com.permutive.google.gcp
 
 import org.typelevel.literally.Literally
 
-object literals:
+package object types:
   extension (inline ctx: StringContext)
     inline def projectId(inline args: Any*): ProjectId =
       ${ProjectIdLiteral('ctx, 'args)}

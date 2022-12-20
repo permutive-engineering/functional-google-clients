@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.permutive.google.gcp.types
+package com.permutive.google.gcp
 
 import org.typelevel.literally.Literally
 
-object literals {
-  implicit class short(val sc: StringContext) extends AnyVal {
+package object types {
+  implicit class projectId(val sc: StringContext) extends AnyVal {
     def projectId(args: Any*): ProjectId = macro ProjectIdLiteral.make
   }
 
   object ProjectIdLiteral extends Literally[ProjectId] {
     def validate(c: Context)(s: String): Either[String, c.Expr[ProjectId]] = {
-      import c.universe.{Try => _, _}
+      import c.universe._
       ProjectId.fromString(s) match {
         case None    => Left(ProjectId.onError(s))
         case Some(_) => Right(c.Expr(q"ProjectId.fromString($s).get"))
