@@ -73,13 +73,13 @@ object GoogleClientSecretsParser {
   final def parse[F[_]](
       path: Path
   )(implicit F: Sync[F]): F[GoogleUserAccount] =
-    F.blocking(Files.readString(path))
-      .flatMap(decode[JsonGoogleInstalledSecrets](_).liftTo[F])
-      .map { secrets =>
-        GoogleUserAccount(
-          secrets.installed.clientId,
-          secrets.installed.clientSecret
-        )
-      }
+    for {
+      bytes <- F.blocking(Files.readAllBytes(path))
+      string <- F.delay(new String(bytes))
+      secrets <- decode[JsonGoogleInstalledSecrets](string).liftTo[F]
+    } yield GoogleUserAccount(
+      secrets.installed.clientId,
+      secrets.installed.clientSecret
+    )
 
 }

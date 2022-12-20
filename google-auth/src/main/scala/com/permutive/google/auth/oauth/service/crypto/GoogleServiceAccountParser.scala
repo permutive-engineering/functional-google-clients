@@ -65,7 +65,8 @@ object GoogleServiceAccountParser {
       path: Path
   )(implicit F: Sync[F]): F[GoogleServiceAccount] =
     for {
-      string <- F.blocking(Files.readString(path))
+      bytes <- F.blocking(Files.readAllBytes(path))
+      string <- F.delay(new String(bytes))
       sa <- decode[JsonGoogleServiceAccount](string).liftTo[F]
       pem <- loadPem(sa.privateKey)
       spec <- F.delay(new PKCS8EncodedKeySpec(pem))
