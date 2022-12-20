@@ -27,24 +27,21 @@ import munit.FunSuite
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
-/** This trait and matcher can be used to store and test expected JSON result in
-  * files rather than coded as strings.
+/** This trait and matcher can be used to store and test expected JSON result in files rather than coded as strings.
   *
-  * Files are stored in the `test/resources` directory under the package that
-  * the test is located in. To use mix the trait ResourceSupport in with your
-  * test (and Matchers). A test can then look like the following:
+  * Files are stored in the `test/resources` directory under the package that the test is located in. To use mix the
+  * trait ResourceSupport in with your test (and Matchers). A test can then look like the following:
   *
   * ```
   * val myCaseClass: MyCaseClass = ???
   * myCaseClass.asJson should equalJsonResource("some-file-name.json")
   * ```
   *
-  * Assuming this was in the package `com.permutive.foo` this would check
-  * against `some-file-name.json` in `test/resources/com/permutive/foo`.
+  * Assuming this was in the package `com.permutive.foo` this would check against `some-file-name.json` in
+  * `test/resources/com/permutive/foo`.
   *
-  * In order to generate these files (for a new test or if the API has
-  * deliberately changed) set the `overwriteResources` flag in the companion
-  * object to `true`. Make sure to not commit this though!
+  * In order to generate these files (for a new test or if the API has deliberately changed) set the
+  * `overwriteResources` flag in the companion object to `true`. Make sure to not commit this though!
   */
 trait ResourceSupport { self: FunSuite =>
 

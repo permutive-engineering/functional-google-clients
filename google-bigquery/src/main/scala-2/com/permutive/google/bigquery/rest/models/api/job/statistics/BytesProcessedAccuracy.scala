@@ -23,9 +23,7 @@ import scala.collection.immutable
 
 sealed trait BytesProcessedAccuracy extends EnumEntry with UpperSnakecase
 
-object BytesProcessedAccuracy
-    extends Enum[BytesProcessedAccuracy]
-    with CirceEnum[BytesProcessedAccuracy] {
+object BytesProcessedAccuracy extends Enum[BytesProcessedAccuracy] with CirceEnum[BytesProcessedAccuracy] {
   override val values: immutable.IndexedSeq[BytesProcessedAccuracy] = findValues
 
   case object Precise extends BytesProcessedAccuracy

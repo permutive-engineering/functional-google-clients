@@ -18,10 +18,7 @@ package com.permutive.google.bigquery.rest.models.api.schema
 
 import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.models.table._
-import com.permutive.google.bigquery.rest.models.api.{
-  SchemaApi,
-  TableReferenceApi
-}
+import com.permutive.google.bigquery.rest.models.api.{SchemaApi, TableReferenceApi}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 

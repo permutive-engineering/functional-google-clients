@@ -16,10 +16,7 @@
 
 package com.permutive.google.bigquery.rest.models
 
-import com.permutive.google.bigquery.models.NewTypes.{
-  BigQueryProjectName,
-  DatasetId
-}
+import com.permutive.google.bigquery.models.NewTypes.{BigQueryProjectName, DatasetId}
 import com.permutive.google.bigquery.models.table.NewTypes.TableId
 import com.permutive.google.bigquery.rest.models.api.TableReferenceApi
 

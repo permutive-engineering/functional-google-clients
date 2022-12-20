@@ -70,9 +70,9 @@ object JobConfigurationApi {
         jca match {
           case q: Query =>
             indicatorJson(JobTypeIndicator.Query).deepMerge(q.asJsonObject)
-          case Copy    => indicatorJson(JobTypeIndicator.Copy)
+          case Copy => indicatorJson(JobTypeIndicator.Copy)
           case Extract => indicatorJson(JobTypeIndicator.Extract)
-          case Load    => indicatorJson(JobTypeIndicator.Load)
+          case Load => indicatorJson(JobTypeIndicator.Load)
           case Unknown => indicatorJson(JobTypeIndicator.Unknown)
         }
 

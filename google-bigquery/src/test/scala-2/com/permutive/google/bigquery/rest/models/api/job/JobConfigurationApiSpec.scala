@@ -23,10 +23,7 @@ import io.circe.parser.parse
 import io.circe.syntax._
 import munit.FunSuite
 
-class JobConfigurationApiSpec
-    extends FunSuite
-    with ResourceSupport
-    with ResourceSupportMatchers {
+class JobConfigurationApiSpec extends FunSuite with ResourceSupport with ResourceSupportMatchers {
 
   override val packageName = Some("google-bigquery")
 

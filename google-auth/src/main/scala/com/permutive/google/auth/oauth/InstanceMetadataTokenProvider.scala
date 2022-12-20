@@ -43,8 +43,7 @@ class InstanceMetadataTokenProvider[F[_]: MonadThrow](
 }
 
 object InstanceMetadataTokenProvider {
-  def apply[F[_]: InstanceMetadataTokenProvider]
-      : InstanceMetadataTokenProvider[F] = implicitly
+  def apply[F[_]: InstanceMetadataTokenProvider]: InstanceMetadataTokenProvider[F] = implicitly
 
   def google[F[_]: Async](
       httpClient: Client[F]

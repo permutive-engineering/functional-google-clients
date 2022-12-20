@@ -72,7 +72,7 @@ object GoogleClientSecretsParser {
 
   final def parse[F[_]](
       path: Path
-  )(implicit F: Sync[F]): F[GoogleUserAccount] = {
+  )(implicit F: Sync[F]): F[GoogleUserAccount] =
     F.blocking(Files.readString(path))
       .flatMap(decode[JsonGoogleInstalledSecrets](_).liftTo[F])
       .map { secrets =>
@@ -81,6 +81,5 @@ object GoogleClientSecretsParser {
           secrets.installed.clientSecret
         )
       }
-  }
 
 }

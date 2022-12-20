@@ -33,10 +33,7 @@ import com.permutive.google.bigquery.rest.models.job.NewTypes._
 import com.permutive.google.bigquery.rest.models.job._
 import com.permutive.google.bigquery.rest.models.job.queryparameters.QueryParameter
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes._
-import com.permutive.google.bigquery.rest.models.job.results.{
-  DryRunQueryJob,
-  QueryJobResults
-}
+import com.permutive.google.bigquery.rest.models.job.results.{DryRunQueryJob, QueryJobResults}
 import com.permutive.google.bigquery.rest.utils.UriUtils
 import com.permutive.google.bigquery.utils.Circe.circeEntityEncoderDropNullValues
 import io.circe.Encoder
@@ -208,7 +205,7 @@ class HttpBigQueryJob[F[_]: HttpMethods: Logger](
   private def raiseIfJobFailed(job: CompleteJob): F[SuccessfulJob] =
     job match {
       case s: SuccessfulJob => F.pure(s)
-      case f: FailedJob     => F.raiseError(FailedJobException(f))
+      case f: FailedJob => F.raiseError(FailedJobException(f))
     }
 
   override def createQueryWriteTableJob(

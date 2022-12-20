@@ -21,10 +21,7 @@ import com.permutive.testutils.{ResourceSupport, ResourceSupportMatchers}
 import io.circe.literal._
 import munit.FunSuite
 
-class JobQueryResultApiSpec
-    extends FunSuite
-    with ResourceSupport
-    with ResourceSupportMatchers {
+class JobQueryResultApiSpec extends FunSuite with ResourceSupport with ResourceSupportMatchers {
 
   override val packageName = Some("google-bigquery")
 

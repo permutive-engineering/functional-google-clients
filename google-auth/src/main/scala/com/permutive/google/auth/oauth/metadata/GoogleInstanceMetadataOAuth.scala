@@ -40,8 +40,7 @@ class GoogleInstanceMetadataOAuth[F[_]: Async: Logger](
 
   final private[this] val description = "instance metadata endpoint"
 
-  final private[this] val apiToServiceToken
-      : AccessTokenApi => ServiceAccountAccessToken =
+  final private[this] val apiToServiceToken: AccessTokenApi => ServiceAccountAccessToken =
     token =>
       ServiceAccountAccessToken(
         token.accessToken,

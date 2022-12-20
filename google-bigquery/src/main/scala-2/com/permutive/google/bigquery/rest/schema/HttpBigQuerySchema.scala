@@ -28,10 +28,7 @@ import com.permutive.google.bigquery.models.table.NewTypes._
 import com.permutive.google.bigquery.models.table._
 import com.permutive.google.bigquery.rest.ApiEndpoints
 import com.permutive.google.bigquery.rest.models.api.schema._
-import com.permutive.google.bigquery.rest.models.api.{
-  SchemaApi,
-  TableReferenceApi
-}
+import com.permutive.google.bigquery.rest.models.api.{SchemaApi, TableReferenceApi}
 import com.permutive.google.bigquery.rest.models.job.PaginationSettings
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes.PageToken
 import com.permutive.google.bigquery.rest.models.schema.{
@@ -181,8 +178,7 @@ class HttpBigQuerySchema[F[_]: HttpMethods: Logger](
           tableId
         ),
         SchemaApi(fields),
-        timePartitioning =
-          none // this change will be ignored (see comment above)
+        timePartitioning = none // this change will be ignored (see comment above)
       )
 
     Logger[F].debug(s"Updating fields in table $tableId: $requestBody") >>
@@ -241,9 +237,7 @@ class HttpBigQuerySchema[F[_]: HttpMethods: Logger](
         uri,
         "list tables"
       )
-      converted <- raw.tables.toList.flatten.traverse(table =>
-        F.fromEither(DatasetObject.fromResponse(table))
-      )
+      converted <- raw.tables.toList.flatten.traverse(table => F.fromEither(DatasetObject.fromResponse(table)))
     } yield ListTablesAndViewsResult(
       converted,
       raw.totalItems,

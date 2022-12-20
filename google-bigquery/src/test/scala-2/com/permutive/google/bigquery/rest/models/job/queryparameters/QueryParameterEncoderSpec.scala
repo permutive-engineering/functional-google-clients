@@ -20,9 +20,7 @@ import com.permutive.google.bigquery.rest.models.ArbitraryInstances
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll
 
-class QueryParameterEncoderSpec
-    extends ScalaCheckSuite
-    with ArbitraryInstances {
+class QueryParameterEncoderSpec extends ScalaCheckSuite with ArbitraryInstances {
 
   property("derive the correct QueryParameterEncoder") {
     forAll { (ss: List[String], name: String) =>

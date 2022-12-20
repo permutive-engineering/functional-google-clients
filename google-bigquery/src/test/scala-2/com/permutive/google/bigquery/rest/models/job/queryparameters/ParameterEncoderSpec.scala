@@ -214,8 +214,7 @@ class ParameterEncoderSpec extends ScalaCheckSuite with ArbitraryInstances {
     )
   }
 
-  implicit val parameterEncoderArrayCaseClass
-      : ParameterEncoder[ArrayCaseClass] = ParameterEncoder.deriveEncoder
+  implicit val parameterEncoderArrayCaseClass: ParameterEncoder[ArrayCaseClass] = ParameterEncoder.deriveEncoder
 
   val expectedArrayCaseClassType =
     QueryParameterType(
@@ -302,9 +301,7 @@ class ParameterEncoderSpec extends ScalaCheckSuite with ArbitraryInstances {
               QueryParameterValue(
                 None,
                 Some(
-                  is.map(i =>
-                    QueryParameterValue(value = Some(i.toString), None, None)
-                  )
+                  is.map(i => QueryParameterValue(value = Some(i.toString), None, None))
                 ),
                 None
               )

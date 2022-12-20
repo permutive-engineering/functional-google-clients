@@ -45,7 +45,7 @@ class CostSpec extends DisciplineSuite with ArbitraryInstances {
     bytesLocationExpectedCost.foreach { case (bytes, location, cost) =>
       assert(Cost(bytes, location) match {
         case Cost(bd) if bd.toDouble == cost => true
-        case _                               => false
+        case _ => false
       })
     }
   }

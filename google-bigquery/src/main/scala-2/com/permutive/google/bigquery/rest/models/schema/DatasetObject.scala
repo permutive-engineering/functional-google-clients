@@ -25,10 +25,7 @@ import com.permutive.google.bigquery.models.NewTypes.DatasetId
 import com.permutive.google.bigquery.models.table.NewTypes.TableId
 import com.permutive.google.bigquery.models.table.Partitioning
 import com.permutive.google.bigquery.rest.models.Exceptions.MissingFieldsException
-import com.permutive.google.bigquery.rest.models.api.schema.{
-  ListTableResponseApi,
-  TableObjectType
-}
+import com.permutive.google.bigquery.rest.models.api.schema.{ListTableResponseApi, TableObjectType}
 
 sealed trait DatasetObject {
   def name: TableId
@@ -44,7 +41,7 @@ object DatasetObject {
   ): Either[BigQueryException, DatasetObject] =
     response.`type` match {
       case TableObjectType.Table => readTable(response)
-      case TableObjectType.View  => readView(response)
+      case TableObjectType.View => readView(response)
     }
 
   private def readTable(

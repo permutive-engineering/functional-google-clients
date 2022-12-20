@@ -44,7 +44,7 @@ object JobError {
   ): NonEmptyList[JobError] =
     es match {
       case Some(esList) => many(esList).getOrElse(NonEmptyList.one(one(e)))
-      case None         => NonEmptyList.one(one(e))
+      case None => NonEmptyList.one(one(e))
     }
 
   private[rest] def many(

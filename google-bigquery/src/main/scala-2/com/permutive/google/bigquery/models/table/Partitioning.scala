@@ -22,15 +22,12 @@ import scala.concurrent.duration.{Duration, _}
 
 /** Represents how a BigQuery table is partitioned.
   *
-  * API Documentation:
-  * https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#TimePartitioning
+  * API Documentation: https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#TimePartitioning
   *
   * @param `type`
-  *   [[PartitioningType]] which indicates the time-scale a table is partitioned
-  *   over.
+  *   [[PartitioningType]] which indicates the time-scale a table is partitioned over.
   * @param field
-  *   Which field a table is partitioned over. Pseudo-column `_PARTITIONTIME`
-  *   used if not set.
+  *   Which field a table is partitioned over. Pseudo-column `_PARTITIONTIME` used if not set.
   * @param expiration
   *   The TTL for the partition. None for indefinite.
   */

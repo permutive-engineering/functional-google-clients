@@ -42,8 +42,7 @@ object QueryParameterEncoder {
       qpe: QueryParameterEncoder[A]
   ): QueryParameterEncoder[A] = qpe
 
-  implicit val contravariantForQueryParameterEncoder
-      : Contravariant[QueryParameterEncoder] =
+  implicit val contravariantForQueryParameterEncoder: Contravariant[QueryParameterEncoder] =
     new Contravariant[QueryParameterEncoder] {
       override def contramap[A, B](
           fa: QueryParameterEncoder[A]
@@ -54,14 +53,12 @@ object QueryParameterEncoder {
 
   /** Derive a [[QueryParameterEncoder]] for a generic type.
     *
-    * This method is implicit so does not need to be used directly ([[apply]]
-    * can be used to summon an instance). You may wish to use this method
-    * directly to use the same [[QueryParameterEncoder]] in multiple locations
-    * without deriving a new instance in each location.
+    * This method is implicit so does not need to be used directly ([[apply]] can be used to summon an instance). You
+    * may wish to use this method directly to use the same [[QueryParameterEncoder]] in multiple locations without
+    * deriving a new instance in each location.
     *
-    * Can derive encoders for some simple types, HLists (so case classes) and
-    * array-like types. See methods and values in the companion object of
-    * [[ParameterEncoder]] for allowed types.
+    * Can derive encoders for some simple types, HLists (so case classes) and array-like types. See methods and values
+    * in the companion object of [[ParameterEncoder]] for allowed types.
     */
   implicit def deriveEncoder[A](implicit
       hEnc: Lazy[ParameterEncoder[A]]
@@ -77,8 +74,7 @@ object QueryParameterEncoder {
 
 /** Allows encoding to BigQuery query parameter type and value.
   *
-  * Mostly used internally for generic derivation. See [[QueryParameterEncoder]]
-  * for public use.
+  * Mostly used internally for generic derivation. See [[QueryParameterEncoder]] for public use.
   */
 trait ParameterEncoder[A] {
   def value(a: A): QueryParameterValue
@@ -123,15 +119,12 @@ object ParameterEncoder {
 
   /** Encode a `List[A]` as an array of parameters, provided `A` can be encoded.
     *
-    * Helper method around [[foldableParameterEncoder]] to avoid importing list
-    * instances.
+    * Helper method around [[foldableParameterEncoder]] to avoid importing list instances.
     */
-  implicit def listParameterEncoder[A: ParameterEncoder]
-      : ParameterEncoder[List[A]] =
+  implicit def listParameterEncoder[A: ParameterEncoder]: ParameterEncoder[List[A]] =
     foldableParameterEncoder
 
-  /** Encode an `F[A]` as an array of parameters, provided constraints on `F[_]`
-    * are met and `A` can be encoded.
+  /** Encode an `F[A]` as an array of parameters, provided constraints on `F[_]` are met and `A` can be encoded.
     */
   implicit def foldableParameterEncoder[A: ParameterEncoder, F[
       _
@@ -171,8 +164,7 @@ object ParameterEncoder {
         )
     }
 
-  /** Encode an HList as a struct of parameters, provided each element in the
-    * HList can be encoded.
+  /** Encode an HList as a struct of parameters, provided each element in the HList can be encoded.
     */
   implicit def hListParameterEncoder[K <: Symbol, H, T <: HList](implicit
       witness: Witness.Aux[K],
@@ -186,9 +178,8 @@ object ParameterEncoder {
       override def value(hlist: FieldType[K, H] :: T): QueryParameterValue = {
         val head = hEncoder.value.value(hlist.head)
         val tail = tEncoder.value(hlist.tail)
-        val structValues = tail.structValues.map {
-          case ListMapLike(keyValues) =>
-            ListMapLike(name -> head :: keyValues)
+        val structValues = tail.structValues.map { case ListMapLike(keyValues) =>
+          ListMapLike(name -> head :: keyValues)
         }
         tail.copy(structValues = structValues)
       }
@@ -205,9 +196,8 @@ object ParameterEncoder {
 
   /** Derive a [[ParameterEncoder]] for a generic type.
     *
-    * Can derive encoders for some simple types, HLists (so case classes) and
-    * array-like types. See methods and values in the companion object of
-    * [[ParameterEncoder]] for allowed types.
+    * Can derive encoders for some simple types, HLists (so case classes) and array-like types. See methods and values
+    * in the companion object of [[ParameterEncoder]] for allowed types.
     */
   implicit def deriveEncoder[A, H](implicit
       generic: LabelledGeneric.Aux[A, H],
@@ -219,8 +209,7 @@ object ParameterEncoder {
       override val `type`: QueryParameterType = hEncoder.value.`type`
     }
 
-  implicit val contravariantForParameterEncoder
-      : Contravariant[ParameterEncoder] = new Contravariant[ParameterEncoder] {
+  implicit val contravariantForParameterEncoder: Contravariant[ParameterEncoder] = new Contravariant[ParameterEncoder] {
     override def contramap[A, B](
         fa: ParameterEncoder[A]
     )(f: B => A): ParameterEncoder[B] =

@@ -35,7 +35,7 @@ object Job {
   private[rest] def from(id: JobId, jobStatusApi: JobStatusApi): Job =
     jobStatusApi.state match {
       case Done => CompleteJob.from(id, jobStatusApi)
-      case _    => IncompleteJob(id, jobStatusApi.state)
+      case _ => IncompleteJob(id, jobStatusApi.state)
     }
 
 }
@@ -51,7 +51,7 @@ object CompleteJob {
   // https://cloud.google.com/bigquery/docs/reference/rest/v2/JobStatus
   private[rest] def from(id: JobId, jobStatusApi: JobStatusApi): CompleteJob =
     jobStatusApi.errorResult match {
-      case None    => SuccessfulJob(id)
+      case None => SuccessfulJob(id)
       case Some(e) => FailedJob.from(id, e, jobStatusApi.errors)
     }
 

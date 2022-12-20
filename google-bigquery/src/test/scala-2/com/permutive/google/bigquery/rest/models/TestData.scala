@@ -100,9 +100,7 @@ object TestData {
     jobReferenceApi
   )
   val createQueryBasicJobRequestApiDryRun =
-    createQueryBasicJobRequestApiNoDryRun.copy(configuration =
-      jobConfigurationQueryBasicDryRun
-    )
+    createQueryBasicJobRequestApiNoDryRun.copy(configuration = jobConfigurationQueryBasicDryRun)
 
   val createCopyJobRequestApi = CreateQueryJobRequestApi(
     JobConfigurationApi.Copy,

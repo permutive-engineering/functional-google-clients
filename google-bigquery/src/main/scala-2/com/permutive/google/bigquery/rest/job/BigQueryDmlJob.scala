@@ -24,10 +24,7 @@ import com.permutive.google.bigquery.rest.models.Exceptions._
 import com.permutive.google.bigquery.rest.models.job.NewTypes._
 import com.permutive.google.bigquery.rest.models.job.PollSettings
 import com.permutive.google.bigquery.rest.models.job.queryparameters.QueryParameter
-import com.permutive.google.bigquery.rest.models.job.results.{
-  CompleteDmlJob,
-  QueryJobResults
-}
+import com.permutive.google.bigquery.rest.models.job.results.{CompleteDmlJob, QueryJobResults}
 
 trait BigQueryDmlJob[F[_]] {
 

@@ -41,8 +41,7 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 
   final private[this] val description = "user account"
 
-  final private[this] val apiToUserToken
-      : AccessTokenApi => UserAccountAccessToken =
+  final private[this] val apiToUserToken: AccessTokenApi => UserAccountAccessToken =
     token =>
       UserAccountAccessToken(
         token.accessToken,

@@ -18,10 +18,7 @@ package com.permutive.google.bigquery.rest.models.api.job.statistics
 
 import cats.data.NonEmptyList
 import com.permutive.google.bigquery.rest.models.api.TypeFormat.Int64Value
-import com.permutive.google.bigquery.rest.models.api.{
-  SchemaApi,
-  TableReferenceApi
-}
+import com.permutive.google.bigquery.rest.models.api.{SchemaApi, TableReferenceApi}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 
@@ -39,9 +36,8 @@ private[rest] object QueryStatisticsApi {
   implicit val decoder: Decoder[QueryStatisticsApi] =
     DryQueryStatisticsApi.decoder.map(identity)
 
-  implicit val encoder: Encoder.AsObject[QueryStatisticsApi] = {
-    case d: DryQueryStatisticsApi =>
-      DryQueryStatisticsApi.encoder.encodeObject(d)
+  implicit val encoder: Encoder.AsObject[QueryStatisticsApi] = { case d: DryQueryStatisticsApi =>
+    DryQueryStatisticsApi.encoder.encodeObject(d)
   }
 }
 

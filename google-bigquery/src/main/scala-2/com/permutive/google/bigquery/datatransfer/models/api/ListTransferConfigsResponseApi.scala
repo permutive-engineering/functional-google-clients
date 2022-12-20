@@ -26,8 +26,8 @@ case class ListTransferConfigsResponseApi(
     ] // If this exists it means there are subsequent pages in the response
 ) extends PaginatedApi {
   val extractScheduledQueries: List[ScheduledQueryResponseApi] =
-    transferConfigs.getOrElse(List.empty).collect {
-      case sq: ScheduledQueryResponseApi => sq
+    transferConfigs.getOrElse(List.empty).collect { case sq: ScheduledQueryResponseApi =>
+      sq
     }
 }
 

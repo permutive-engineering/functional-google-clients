@@ -27,7 +27,7 @@ package object types {
     def validate(c: Context)(s: String): Either[String, c.Expr[ProjectId]] = {
       import c.universe._
       ProjectId.fromString(s) match {
-        case None    => Left(ProjectId.onError(s))
+        case None => Left(ProjectId.onError(s))
         case Some(_) => Right(c.Expr(q"ProjectId.fromString($s).get"))
       }
     }

@@ -20,11 +20,7 @@ import java.io.File
 
 import cats.effect.kernel.{Async, Sync}
 import cats.syntax.all._
-import com.permutive.google.auth.oauth.user.models.NewTypes.{
-  ClientId,
-  ClientSecret,
-  RefreshToken
-}
+import com.permutive.google.auth.oauth.user.models.NewTypes.{ClientId, ClientSecret, RefreshToken}
 import fs2.io.file.{Files, Flags}
 import io.circe.fs2._
 import io.circe.{Decoder, HCursor}

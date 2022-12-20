@@ -24,9 +24,8 @@ import scala.collection.immutable.ListMap
 
 /** Represents a BigQuery query parameter.
   *
-  * This class does not necessarily need to be constructed directly: use
-  * [[QueryParameterEncoder]] to derive encoders to a [[QueryParameter]] from a
-  * generic type.
+  * This class does not necessarily need to be constructed directly: use [[QueryParameterEncoder]] to derive encoders to
+  * a [[QueryParameter]] from a generic type.
   */
 case class QueryParameter(
     name: Option[String],
@@ -36,8 +35,7 @@ case class QueryParameter(
 
 object QueryParameter {
 
-  /** Used to construct a singular [[QueryParameter]] without a
-    * [[QueryParameterEncoder]].
+  /** Used to construct a singular [[QueryParameter]] without a [[QueryParameterEncoder]].
     */
   def scalar(name: String, `type`: SQLType, value: String): QueryParameter =
     QueryParameter(

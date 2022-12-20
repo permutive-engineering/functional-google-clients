@@ -51,8 +51,7 @@ class GoogleServiceAccountOAuth[F[_]: Logger](
 
   final private[this] val description = "service account JWT"
 
-  final private[this] val apiToServiceToken
-      : AccessTokenApi => ServiceAccountAccessToken =
+  final private[this] val apiToServiceToken: AccessTokenApi => ServiceAccountAccessToken =
     token =>
       ServiceAccountAccessToken(
         token.accessToken,

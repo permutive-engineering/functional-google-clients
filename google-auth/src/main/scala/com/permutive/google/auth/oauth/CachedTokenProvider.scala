@@ -27,15 +27,12 @@ import scala.concurrent.duration._
 
 object CachedTokenProvider {
 
-  /** Suitable safety period for an token from the instance metadata,
-    * [[InstanceMetadataTokenProvider]].
+  /** Suitable safety period for an token from the instance metadata, [[InstanceMetadataTokenProvider]].
     *
-    * The GCP metadata endpoint caches tokens for 5 minutes until their expiry.
-    * The value here (4 minutes) should ensure a new token will be provided and
-    * have no risk of requests using an expired token.
+    * The GCP metadata endpoint caches tokens for 5 minutes until their expiry. The value here (4 minutes) should ensure
+    * a new token will be provided and have no risk of requests using an expired token.
     *
-    * See:
-    * https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#applications
+    * See: https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#applications
     */
   val InstanceMetadataOAuthSafetyPeriod: FiniteDuration = 4.minutes
 
@@ -44,32 +41,26 @@ object CachedTokenProvider {
     * @param underlying
     *   the underlying token provider to use when a new token is required
     * @param safetyPeriod
-    *   how much time less than the indicated expiry to cache a token for; this
-    *   is to give a safety buffer to ensure an expired token is never used in a
-    *   request
+    *   how much time less than the indicated expiry to cache a token for; this is to give a safety buffer to ensure an
+    *   expired token is never used in a request
     * @param onRefreshFailure
-    *   what to do if retrying to refresh the token fails. The refresh fiber
-    *   will have failed at this point and the token will grow stale. It is up
-    *   to user handle this failure, as they see fit, in their application
+    *   what to do if retrying to refresh the token fails. The refresh fiber will have failed at this point and the
+    *   token will grow stale. It is up to user handle this failure, as they see fit, in their application
     * @param onExhaustedRetries
-    *   what to do if retrying to refresh the value fails. The refresh fiber
-    *   will have failed at this point and the value will grow stale. It is up
-    *   to user handle this failure, as they see fit, in their application
+    *   what to do if retrying to refresh the value fails. The refresh fiber will have failed at this point and the
+    *   value will grow stale. It is up to user handle this failure, as they see fit, in their application
     * @param onNewToken
-    *   a callback invoked whenever a new token is generated, the
-    *   [[scala.concurrent.duration.FiniteDuration]] is the period that will be
-    *   waited before the next new token
+    *   a callback invoked whenever a new token is generated, the [[scala.concurrent.duration.FiniteDuration]] is the
+    *   period that will be waited before the next new token
     * @param retryPolicy
-    *   an optional configuration object for attempting to retry the effect of
-    *   `fa` on failure. When no value is supplied this defaults to 5 retries
-    *   with a delay between each of 200 milliseconds.
+    *   an optional configuration object for attempting to retry the effect of `fa` on failure. When no value is
+    *   supplied this defaults to 5 retries with a delay between each of 200 milliseconds.
     */
   def resource[F[_]: Temporal, Token <: AccessToken](
       underlying: TokenProvider[F, Token],
       safetyPeriod: FiniteDuration,
       onRefreshFailure: (Throwable, RetryDetails) => F[Unit],
-      onExhaustedRetries: PartialFunction[Throwable, F[Unit]] =
-        PartialFunction.empty,
+      onExhaustedRetries: PartialFunction[Throwable, F[Unit]] = PartialFunction.empty,
       onNewToken: Option[(Token, FiniteDuration) => F[Unit]] = None,
       retryPolicy: Option[RetryPolicy[F]] = None
   ): Resource[F, TokenProvider[F, Token]] = {
@@ -84,7 +75,7 @@ object CachedTokenProvider {
     val baseBuilder = Refreshable
       .builder[F, Token](underlying.accessToken)
       .cacheDuration(cacheDuration)
-      .onRefreshFailure({ case (th, details) => onRefreshFailure(th, details) })
+      .onRefreshFailure { case (th, details) => onRefreshFailure(th, details) }
       .onExhaustedRetries(onExhaustedRetries)
 
     val newTokenBuilder = onNewToken.fold(baseBuilder)(baseBuilder.onNewValue)

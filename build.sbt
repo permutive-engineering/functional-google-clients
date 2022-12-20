@@ -141,9 +141,8 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
         )
     },
     libraryDependencies ++= PartialFunction
-      .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
-        case Some((2, 12)) =>
-          "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1" % Test
+      .condOpt(CrossVersion.partialVersion(scalaVersion.value)) { case Some((2, 12)) =>
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1" % Test
       }
       .toList,
     publish := {
