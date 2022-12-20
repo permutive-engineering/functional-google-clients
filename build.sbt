@@ -30,7 +30,7 @@ val MunitCE3 = "1.0.7"
 val Pureconfig = "0.17.2"
 
 val Scala213 = "2.13.10"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.1")
+ThisBuild / crossScalaVersions := Seq("2.12.14", Scala213, "3.2.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root =
@@ -140,6 +140,12 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
           "com.github.alexarchambault" %%% "scalacheck-shapeless_1.15" % "1.3.0" % Test
         )
     },
+    libraryDependencies ++= PartialFunction
+      .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
+        case Some((2, 12)) =>
+          "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1" % Test
+      }
+      .toList,
     publish := {
       if (tlIsScala3.value) ()
       else publish.value
