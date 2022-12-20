@@ -144,14 +144,6 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
       .condOpt(CrossVersion.partialVersion(scalaVersion.value)) { case Some((2, 12)) =>
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1" % Test
       }
-      .toList,
-    publish := {
-      if (tlIsScala3.value) ()
-      else publish.value
-    },
-    publishLocal := {
-      if (tlIsScala3.value) ()
-      else publishLocal.value
-    }
+      .toList
   )
   .dependsOn(googleAuth)
