@@ -49,7 +49,7 @@ import org.http4s.{EntityEncoder, Request, Uri}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class HttpBigQuerySchema[F[_]: HttpMethods: Logger](
+sealed abstract class HttpBigQuerySchema[F[_]: HttpMethods: Logger] private (
     projectName: BigQueryProjectName,
     restBaseUri: Uri
 )(implicit F: Concurrent[F])
@@ -320,7 +320,7 @@ object HttpBigQuerySchema {
       projectName: BigQueryProjectName
   ): F[BigQuerySchema[F]] =
     Slf4jLogger.create[F].map { implicit l =>
-      new HttpBigQuerySchema(projectName, ApiEndpoints.baseRestUri)
+      new HttpBigQuerySchema(projectName, ApiEndpoints.baseRestUri) {}
     }
 
 }

@@ -44,7 +44,7 @@ import org.http4s.{EntityDecoder, EntityEncoder, Request, Uri}
 // Scheduling is available using a user account but pre-alpha for a service account (according to Paul Barnes at Google).
 // In our testing was found to be non-functional.
 
-class HttpBigQueryDataTransfer[F[_]: HttpMethods](
+sealed abstract class HttpBigQueryDataTransfer[F[_]: HttpMethods](
     projectName: BigQueryProjectName,
     dataTransferBaseUri: Uri,
     location: Location
@@ -364,7 +364,7 @@ object HttpBigQueryDataTransfer {
       projectName,
       dataTransferUri,
       location
-    )
+    ) {}
 
   def create[F[_]: Sync: Temporal](
       projectName: BigQueryProjectName,

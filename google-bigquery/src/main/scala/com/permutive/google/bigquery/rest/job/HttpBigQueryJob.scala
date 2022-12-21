@@ -50,7 +50,7 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.duration._
 
-class HttpBigQueryJob[F[_]: HttpMethods: Logger](
+sealed abstract class HttpBigQueryJob[F[_]: HttpMethods: Logger] private (
     projectName: BigQueryProjectName,
     restBaseUri: Uri
 )(implicit F: Async[F])
@@ -394,7 +394,7 @@ object HttpBigQueryJob {
       projectName: BigQueryProjectName
   ): F[BigQueryJob[F]] =
     Slf4jLogger.create[F].map { implicit l =>
-      new HttpBigQueryJob(projectName, ApiEndpoints.baseRestUri)
+      new HttpBigQueryJob(projectName, ApiEndpoints.baseRestUri) {}
     }
 
 }

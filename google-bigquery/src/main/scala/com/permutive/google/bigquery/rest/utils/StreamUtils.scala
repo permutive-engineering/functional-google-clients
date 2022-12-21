@@ -22,7 +22,7 @@ import com.permutive.google.bigquery.models.Exceptions.BigQueryException
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes.PageToken
 import fs2.Stream
 
-object StreamUtils {
+private[rest] object StreamUtils {
 
   def unrollResults[F[_]: Concurrent, RawFetch, RawResult, ResultMeta, Result](
       fetch: Option[PageToken] => F[(RawFetch, Option[PageToken])],
