@@ -31,10 +31,13 @@ package com.permutive.google.bigquery.rest.models.job
   * Even if no [[maxResultsPerPage]] is specified BigQuery imposes a 10 MB limit on response sizes automatically:
   * https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query#QueryRequest
   */
-case class PaginationSettings(
-    prefetchPages: Int,
-    maxResultsPerPage: Option[Int]
+sealed abstract class PaginationSettings private (
+    val prefetchPages: Int,
+    val maxResultsPerPage: Option[Int]
 ) {
+
+  private def copy(prefetchPages: Int = prefetchPages, maxResultsPerPage: Option[Int] = maxResultsPerPage) =
+    new PaginationSettings(prefetchPages, maxResultsPerPage) {}
 
   def withPrefetchPages(prefetchPages: Int): PaginationSettings =
     copy(prefetchPages = prefetchPages)
@@ -54,9 +57,9 @@ object PaginationSettings {
     * https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query#QueryRequest
     */
   val default: PaginationSettings =
-    PaginationSettings(
+    new PaginationSettings(
       prefetchPages = 1,
       maxResultsPerPage = None
-    )
+    ) {}
 
 }

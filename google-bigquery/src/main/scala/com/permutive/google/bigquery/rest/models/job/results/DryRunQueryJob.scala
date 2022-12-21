@@ -50,18 +50,18 @@ import com.permutive.google.bigquery.rest.models.job.{JobError, JobState}
   * @param errors
   *   Any errors that resulted from dry-running the query.
   */
-case class DryRunQueryJob(
-    totalBytes: Long,
-    queryBytes: Long, // Seems to be the same as queryBytes
-    queryBytesBilled: Long,
-    queryBytesAccuracy: BytesProcessedAccuracy,
-    location: Option[Location],
-    referencedTables: Option[NonEmptyList[TableReference]],
-    schema: Option[NonEmptyList[Field]],
-    creationTime: Instant,
-    cacheHit: Boolean,
-    state: JobState,
-    errors: Option[NonEmptyList[JobError]]
+sealed abstract class DryRunQueryJob private (
+    val totalBytes: Long,
+    val queryBytes: Long, // Seems to be the same as queryBytes
+    val queryBytesBilled: Long,
+    val queryBytesAccuracy: BytesProcessedAccuracy,
+    val location: Option[Location],
+    val referencedTables: Option[NonEmptyList[TableReference]],
+    val schema: Option[NonEmptyList[Field]],
+    val creationTime: Instant,
+    val cacheHit: Boolean,
+    val state: JobState,
+    val errors: Option[NonEmptyList[JobError]]
 ) {
 
   val totalCost: Cost = Cost(totalBytes, location)
@@ -71,6 +71,32 @@ case class DryRunQueryJob(
 }
 
 object DryRunQueryJob {
+
+  def apply(
+      totalBytes: Long,
+      queryBytes: Long,
+      queryBytesBilled: Long,
+      queryBytesAccuracy: BytesProcessedAccuracy,
+      location: Option[Location],
+      referencedTables: Option[NonEmptyList[TableReference]],
+      schema: Option[NonEmptyList[Field]],
+      creationTime: Instant,
+      cacheHit: Boolean,
+      state: JobState,
+      errors: Option[NonEmptyList[JobError]]
+  ): DryRunQueryJob = new DryRunQueryJob(
+    totalBytes,
+    queryBytes,
+    queryBytesBilled,
+    queryBytesAccuracy,
+    location,
+    referencedTables,
+    schema,
+    creationTime,
+    cacheHit,
+    state,
+    errors
+  ) {}
 
   private[rest] def fromResponse(
       response: DryRunQueryJobResponseApi

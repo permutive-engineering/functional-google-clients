@@ -23,18 +23,38 @@ import com.permutive.google.bigquery.models.WriteDisposition
 import com.permutive.google.bigquery.models.table.Field
 import com.permutive.google.bigquery.models.table.NewTypes._
 
-case class ScheduledQuery(
-    configId: ConfigId,
-    displayName: DisplayName,
-    query: Query,
-    schedule: Schedule,
-    destinationDataset: DatasetId,
-    destinationTableName: Option[TableId],
-    writeDisposition: Option[WriteDisposition],
-    partitioningFieldName: Option[Field.Name]
+sealed abstract class ScheduledQuery private (
+    val configId: ConfigId,
+    val displayName: DisplayName,
+    val query: Query,
+    val schedule: Schedule,
+    val destinationDataset: DatasetId,
+    val destinationTableName: Option[TableId],
+    val writeDisposition: Option[WriteDisposition],
+    val partitioningFieldName: Option[Field.Name]
 )
 
 object ScheduledQuery {
+
+  def apply(
+      configId: ConfigId,
+      displayName: DisplayName,
+      query: Query,
+      schedule: Schedule,
+      destinationDataset: DatasetId,
+      destinationTableName: Option[TableId],
+      writeDisposition: Option[WriteDisposition],
+      partitioningFieldName: Option[Field.Name]
+  ): ScheduledQuery = new ScheduledQuery(
+    configId,
+    displayName,
+    query,
+    schedule,
+    destinationDataset,
+    destinationTableName,
+    writeDisposition,
+    partitioningFieldName
+  ) {}
 
   private[datatransfer] def fromApi(
       api: ScheduledQueryResponseApi

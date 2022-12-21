@@ -57,19 +57,27 @@ object CompleteJob {
 
 }
 
-final case class IncompleteJob(
-    id: JobId,
-    state: JobState
+final class IncompleteJob private (
+    override val id: JobId,
+    override val state: JobState
 ) extends Job
 
-final case class SuccessfulJob(
-    id: JobId
+object IncompleteJob {
+  def apply(id: JobId, state: JobState): IncompleteJob = new IncompleteJob(id, state)
+}
+
+final class SuccessfulJob private (
+    override val id: JobId
 ) extends CompleteJob
 
-final case class FailedJob(
-    id: JobId,
-    jobError: JobError,
-    jobErrors: NonEmptyList[JobError]
+object SuccessfulJob {
+  def apply(id: JobId): SuccessfulJob = new SuccessfulJob(id)
+}
+
+final class FailedJob private (
+    override val id: JobId,
+    val jobError: JobError,
+    val jobErrors: NonEmptyList[JobError]
 ) extends CompleteJob
 
 object FailedJob {
@@ -79,6 +87,6 @@ object FailedJob {
       e: ErrorProtoApi,
       es: Option[List[ErrorProtoApi]]
   ): FailedJob =
-    FailedJob(id, JobError.one(e), JobError.many(e, es))
+    new FailedJob(id, JobError.one(e), JobError.many(e, es))
 
 }

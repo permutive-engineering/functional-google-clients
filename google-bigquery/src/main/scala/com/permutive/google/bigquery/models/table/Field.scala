@@ -18,6 +18,7 @@ package com.permutive.google.bigquery.models.table
 
 import cats.Eq
 import cats.data.NonEmptyList
+import cats.syntax.functor._
 import com.permutive.google.bigquery.models.SQLType
 import enumeratum.EnumEntry.Uppercase
 import enumeratum.{CirceEnum, Enum, EnumEntry}
@@ -26,15 +27,23 @@ import io.circe.{Decoder, Encoder}
 
 // Documentation: https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#resource
 
-case class Field(
-    name: Field.Name,
-    `type`: SQLType,
-    mode: Option[Field.Mode],
-    description: Option[String],
-    fields: Option[NonEmptyList[Field]]
+sealed abstract class Field private (
+    val name: Field.Name,
+    val `type`: SQLType,
+    val mode: Option[Field.Mode],
+    val description: Option[String],
+    val fields: Option[NonEmptyList[Field]]
 )
 
 object Field {
+
+  sealed private case class FieldCC private (
+      override val name: Field.Name,
+      override val `type`: SQLType,
+      override val mode: Option[Field.Mode],
+      override val description: Option[String],
+      override val fields: Option[NonEmptyList[Field]]
+  ) extends Field(name, `type`, mode, description, fields)
 
   case class Name(value: String) extends AnyVal
 
@@ -59,7 +68,8 @@ object Field {
 
   }
 
-  implicit val decoder: Decoder[Field] = deriveDecoder
-  implicit val encoder: Encoder.AsObject[Field] = deriveEncoder
+  implicit val decoder: Decoder[Field] = deriveDecoder[FieldCC].widen
+  implicit val encoder: Encoder[Field] =
+    deriveEncoder[FieldCC].contramap[Field](f => FieldCC(f.name, f.`type`, f.mode, f.description, f.fields))
 
 }

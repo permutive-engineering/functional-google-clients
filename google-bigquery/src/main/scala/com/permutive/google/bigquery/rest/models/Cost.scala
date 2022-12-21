@@ -21,7 +21,7 @@ import cats.kernel.{CommutativeGroup, Order}
 import com.permutive.google.bigquery.models.NewTypes.Location
 import java.math.MathContext
 
-sealed abstract case class Cost(dollars: BigDecimal) {
+sealed abstract class Cost private (val dollars: BigDecimal) {
 
   override def toString: String = Show[Cost].show(this)
 

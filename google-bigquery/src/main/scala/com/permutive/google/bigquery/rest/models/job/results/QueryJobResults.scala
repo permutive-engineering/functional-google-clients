@@ -34,9 +34,13 @@ sealed trait QueryJobResults {
   ] // Errors do no necessarily indicate failure
 }
 
-final case class IncompleteJob(
-    errors: Option[NonEmptyList[JobError]]
+sealed abstract class IncompleteJob private (
+    val errors: Option[NonEmptyList[JobError]]
 ) extends QueryJobResults
+
+object IncompleteJob {
+  def apply(errors: Option[NonEmptyList[JobError]]): IncompleteJob = new IncompleteJob(errors) {}
+}
 
 sealed trait CompleteJob extends QueryJobResults {
   def schema: NonEmptyList[Field]
@@ -47,28 +51,54 @@ sealed trait CompleteJob extends QueryJobResults {
   def cost: Cost = Cost(totalBytesProcessed, location)
 }
 
-final case class CompleteDmlJob(
-    schema: NonEmptyList[Field],
-    location: Option[Location],
-    totalBytesProcessed: Long,
-    cacheHit: Boolean,
-    affectedRows: Long,
-    errors: Option[NonEmptyList[JobError]]
+sealed abstract class CompleteDmlJob private (
+    val schema: NonEmptyList[Field],
+    val location: Option[Location],
+    val totalBytesProcessed: Long,
+    val cacheHit: Boolean,
+    val affectedRows: Long,
+    val errors: Option[NonEmptyList[JobError]]
 ) extends CompleteJob {
   override val cost = Cost(totalBytesProcessed, location)
 }
 
-final case class CompleteSelectJob(
-    schema: NonEmptyList[Field],
-    location: Option[Location],
-    rows: Option[NonEmptyList[JobResultRow]],
-    totalRows: Long,
-    nextPageToken: Option[PageToken],
-    totalBytesProcessed: Long,
-    cacheHit: Boolean,
-    errors: Option[NonEmptyList[JobError]]
+object CompleteDmlJob {
+  def apply(
+      schema: NonEmptyList[Field],
+      location: Option[Location],
+      totalBytesProcessed: Long,
+      cacheHit: Boolean,
+      affectedRows: Long,
+      errors: Option[NonEmptyList[JobError]]
+  ): CompleteDmlJob = new CompleteDmlJob(schema, location, totalBytesProcessed, cacheHit, affectedRows, errors) {}
+}
+
+sealed abstract class CompleteSelectJob private (
+    val schema: NonEmptyList[Field],
+    val location: Option[Location],
+    val rows: Option[NonEmptyList[JobResultRow]],
+    val totalRows: Long,
+    val nextPageToken: Option[PageToken],
+    val totalBytesProcessed: Long,
+    val cacheHit: Boolean,
+    val errors: Option[NonEmptyList[JobError]]
 ) extends CompleteJob {
   override val cost = Cost(totalBytesProcessed, location)
+}
+
+object CompleteSelectJob {
+  def apply(
+      schema: NonEmptyList[Field],
+      location: Option[Location],
+      rows: Option[NonEmptyList[JobResultRow]],
+      totalRows: Long,
+      nextPageToken: Option[PageToken],
+      totalBytesProcessed: Long,
+      cacheHit: Boolean,
+      errors: Option[NonEmptyList[JobError]]
+  ): CompleteSelectJob =
+    new CompleteSelectJob(schema, location, rows, totalRows, nextPageToken, totalBytesProcessed, cacheHit, errors) {}
+
 }
 
 object QueryJobResults {

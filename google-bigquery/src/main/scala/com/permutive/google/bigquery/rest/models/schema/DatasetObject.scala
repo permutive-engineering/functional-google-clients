@@ -48,7 +48,7 @@ object DatasetObject {
       responseApi: ListTableResponseApi
   ): Either[BigQueryException, Table] =
     Right(
-      Table(
+      new Table(
         responseApi.tableReference.tableId,
         responseApi.tableReference.datasetId,
         responseApi.timePartitioning,
@@ -83,12 +83,12 @@ object DatasetObject {
 
 }
 
-final case class Table(
-    name: TableId,
-    dataset: DatasetId,
-    partitioning: Option[Partitioning],
-    creationTime: Instant,
-    expirationTime: Option[Instant]
+final class Table(
+    override val name: TableId,
+    override val dataset: DatasetId,
+    val partitioning: Option[Partitioning],
+    override val creationTime: Instant,
+    override val expirationTime: Option[Instant]
 ) extends DatasetObject
 
 final case class View(
