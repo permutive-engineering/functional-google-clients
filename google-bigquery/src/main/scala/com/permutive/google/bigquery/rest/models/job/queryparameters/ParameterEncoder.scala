@@ -18,7 +18,7 @@ package com.permutive.google.bigquery.rest.models.job.queryparameters
 
 import cats.syntax.foldable._
 import cats.syntax.functor._
-import cats.{Contravariant, Foldable, Functor}
+import cats.{Contravariant, Eq, Foldable, Functor}
 import com.permutive.google.bigquery.models.SQLType
 
 /** Allows encoding to a named BigQuery query parameter. */

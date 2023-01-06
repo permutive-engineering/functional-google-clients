@@ -33,10 +33,24 @@ sealed abstract class Field private (
     val mode: Option[Field.Mode],
     val description: Option[String],
     val fields: Option[NonEmptyList[Field]]
-)
+) {
+  override def equals(obj: Any): Boolean = obj match {
+    case f: Field => Eq[Field].eqv(this, f)
+    case _ => false
+  }
+}
 
 object Field {
 
+  def apply(
+      name: Field.Name,
+      `type`: SQLType,
+      mode: Option[Field.Mode],
+      description: Option[String],
+      fields: Option[NonEmptyList[Field]]
+  ): Field = new Field(name, `type`, mode, description, fields) {}
+
+  // Exists so that Circe instances can be derived for Scala 3
   sealed private case class FieldCC private (
       override val name: Field.Name,
       override val `type`: SQLType,
@@ -66,6 +80,11 @@ object Field {
 
     case object Required extends Mode
 
+  }
+
+  // Eq instance that works for both the abstract class and case class
+  implicit val eq: Eq[Field] = Eq.instance { (x, y) =>
+    x.name == y.name && x.`type` == y.`type` && x.mode == y.mode && x.description == y.description && x.fields == y.fields
   }
 
   implicit val decoder: Decoder[Field] = deriveDecoder[FieldCC].widen

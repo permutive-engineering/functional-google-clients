@@ -16,6 +16,7 @@
 
 package com.permutive.google.bigquery.models.table
 
+import cats.Eq
 import io.circe.{Decoder, Encoder, Json}
 
 import scala.concurrent.duration.{Duration, _}
@@ -35,7 +36,12 @@ sealed abstract class Partitioning private (
     val `type`: PartitioningType,
     val field: Option[Field.Name],
     val expiration: Option[Duration]
-)
+) {
+  override def equals(obj: Any): Boolean = obj match {
+    case p: Partitioning => Eq[Partitioning].eqv(this, p)
+    case _ => false
+  }
+}
 
 object Partitioning {
   def apply(`type`: PartitioningType, field: Option[Field.Name], expiration: Option[Duration]): Partitioning =
@@ -44,6 +50,10 @@ object Partitioning {
       field,
       expiration
     ) {}
+
+  implicit val eq: Eq[Partitioning] = Eq.instance { (x, y) =>
+    x.`type` == y.`type` && x.field == y.field && x.expiration == y.expiration
+  }
 
   implicit val msDurationDecoder: Decoder[Duration] =
     Decoder.instance(_.as[Long].map(_.millis))

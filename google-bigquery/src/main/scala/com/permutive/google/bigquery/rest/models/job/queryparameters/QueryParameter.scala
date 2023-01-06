@@ -16,6 +16,7 @@
 
 package com.permutive.google.bigquery.rest.models.job.queryparameters
 
+import cats.kernel.Eq
 import com.permutive.google.bigquery.models.SQLType
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
@@ -32,7 +33,12 @@ sealed abstract class QueryParameter(
     val name: Option[String],
     val parameterType: QueryParameterType,
     val parameterValue: QueryParameterValue
-)
+) {
+  override def equals(obj: Any): Boolean = obj match {
+    case f: QueryParameter => Eq[QueryParameter].eqv(this, f)
+    case _ => false
+  }
+}
 
 object QueryParameter {
 
@@ -57,6 +63,13 @@ object QueryParameter {
       QueryParameterValue.singular(value)
     )
 
+  implicit val eq: Eq[QueryParameter] = Eq.instance { (x, y) =>
+    x.name == y.name && Eq[QueryParameterType].eqv(x.parameterType, y.parameterType) && Eq[QueryParameterValue].eqv(
+      x.parameterValue,
+      y.parameterValue
+    )
+  }
+
   implicit val encoder: Encoder[QueryParameter] =
     deriveEncoder[QueryParameterCC].contramap[QueryParameter](qp =>
       QueryParameterCC(qp.name, qp.parameterType, qp.parameterValue)
@@ -73,6 +86,11 @@ sealed abstract class QueryParameterValue(
       values: Option[ListMapLike[String, QueryParameterValue]]
   ): QueryParameterValue =
     new QueryParameterValue(value, arrayValues, values) {}
+
+  override def equals(obj: Any): Boolean = obj match {
+    case f: QueryParameterValue => Eq[QueryParameterValue].eqv(this, f)
+    case _ => false
+  }
 }
 
 object QueryParameterValue {
@@ -96,6 +114,10 @@ object QueryParameterValue {
       structValues = None
     )
 
+  implicit val eq: Eq[QueryParameterValue] = Eq.instance { (x, y) =>
+    x.value == y.value && x.arrayValues == y.arrayValues && x.structValues == y.structValues
+  }
+
   implicit val encoder: Encoder[QueryParameterValue] =
     deriveEncoder[QueryParameterValueCC].contramap[QueryParameterValue](qpv =>
       QueryParameterValueCC(qpv.value, qpv.arrayValues, qpv.structValues)
@@ -112,6 +134,11 @@ sealed abstract class QueryParameterType(
       values: Option[List[StructType]]
   ): QueryParameterType =
     new QueryParameterType(`type`, arrayType, values) {}
+
+  override def equals(obj: Any): Boolean = obj match {
+    case f: QueryParameterType => Eq[QueryParameterType].eqv(this, f)
+    case _ => false
+  }
 }
 
 object QueryParameterType {
@@ -135,6 +162,10 @@ object QueryParameterType {
   def singular(sqlType: SQLType): QueryParameterType =
     QueryParameterType(`type` = sqlType, arrayType = None, structTypes = None)
 
+  implicit val eq: Eq[QueryParameterType] = Eq.instance { (x, y) =>
+    x.`type` == y.`type` && x.arrayType == y.arrayType && Eq[Option[List[StructType]]].eqv(x.structTypes, y.structTypes)
+  }
+
   implicit val encoder: Encoder[QueryParameterType] =
     deriveEncoder[QueryParameterTypeCC].contramap[QueryParameterType](qpt =>
       QueryParameterTypeCC(qpt.`type`, qpt.arrayType, qpt.structTypes)
@@ -142,7 +173,12 @@ object QueryParameterType {
   implicit val decoder: Decoder[QueryParameterType] = deriveDecoder[QueryParameterTypeCC].widen
 }
 
-sealed abstract class StructType(val name: Option[String], val `type`: QueryParameterType)
+sealed abstract class StructType(val name: Option[String], val `type`: QueryParameterType) {
+  override def equals(obj: Any): Boolean = obj match {
+    case f: StructType => Eq[StructType].eqv(this, f)
+    case _ => false
+  }
+}
 
 object StructType {
   final private case class StructTypeCC private (
@@ -152,16 +188,27 @@ object StructType {
 
   def apply(name: Option[String], `type`: QueryParameterType): StructType = new StructType(name, `type`) {}
 
+  implicit val eq: Eq[StructType] = Eq.instance { (x, y) =>
+    x.name == y.name && x.`type` == y.`type`
+  }
+
   implicit val encoder: Encoder[StructType] =
     deriveEncoder[StructTypeCC].contramap[StructType](st => StructTypeCC(st.name, st.`type`))
   implicit val decoder: Decoder[StructType] = deriveDecoder[StructTypeCC].widen
 }
 
-sealed abstract class ListMapLike[A, B] private (val keyValues: List[(A, B)])
+sealed abstract class ListMapLike[A, B] private (val keyValues: List[(A, B)]) {
+  override def equals(obj: Any): Boolean = obj match {
+    case l: ListMapLike[A, B] => Eq[ListMapLike[A, B]].eqv(this, l)
+    case _ => false
+  }
+}
 
-object ListMapLike {
+object ListMapLike extends ListMapLikeLowPriority0 {
 
   def apply[A, B](keyValues: List[(A, B)]): ListMapLike[A, B] = new ListMapLike(keyValues) {}
+
+  implicit def eq[A: Eq, B: Eq]: Eq[ListMapLike[A, B]] = Eq.by(_.keyValues)
 
   implicit def encoder[A: Encoder]: Encoder[ListMapLike[String, A]] =
     Encoder[ListMap[String, A]].contramap[ListMapLike[String, A]] { lm =>
@@ -170,5 +217,10 @@ object ListMapLike {
 
   implicit def decoder[A: Decoder]: Decoder[ListMapLike[String, A]] =
     Decoder[ListMap[String, A]].map(m => ListMapLike(m.toList))
+}
 
+trait ListMapLikeLowPriority0 {
+  implicit def eq0[A, B]: Eq[ListMapLike[A, B]] = Eq.instance { (x, y) =>
+    x.keyValues == y.keyValues
+  }
 }

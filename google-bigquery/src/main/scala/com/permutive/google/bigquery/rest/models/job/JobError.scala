@@ -16,6 +16,7 @@
 
 package com.permutive.google.bigquery.rest.models.job
 
+import cats.Eq
 import cats.data.NonEmptyList
 import com.permutive.google.bigquery.rest.models.api.ErrorProtoApi
 
@@ -25,7 +26,12 @@ sealed abstract class JobError private (
       String
     ], // Not strongly typed as docs aren't clear if this the same type as the Location we use elsewhere
     val message: String
-)
+) {
+  override def equals(obj: Any): Boolean = obj match {
+    case f: JobError => Eq[JobError].eqv(this, f)
+    case _ => false
+  }
+}
 
 object JobError {
   def apply(
@@ -57,4 +63,7 @@ object JobError {
   ): Option[NonEmptyList[JobError]] =
     NonEmptyList.fromList(es.map(one))
 
+  implicit val eq: Eq[JobError] = Eq.instance { (x, y) =>
+    x.reason == y.reason && x.location == y.location && x.message == y.message
+  }
 }
