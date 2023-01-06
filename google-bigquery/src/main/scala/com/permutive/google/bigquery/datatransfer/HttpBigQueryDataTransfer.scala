@@ -20,7 +20,6 @@ import cats.data.NonEmptyList
 import cats.effect.kernel.{Concurrent, Sync, Temporal}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models._
-import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.datatransfer.models.Exceptions._
 import com.permutive.google.bigquery.datatransfer.models.NewTypes._
 import com.permutive.google.bigquery.datatransfer.models._
@@ -38,13 +37,14 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityDecoder, EntityEncoder, Request, Uri}
+import retry.RetryPolicy
 
 // [Ben - 2019-02-09]
 // This is currently set to force a user access token due to limitations in the Google API.
 // Scheduling is available using a user account but pre-alpha for a service account (according to Paul Barnes at Google).
 // In our testing was found to be non-functional.
 
-class HttpBigQueryDataTransfer[F[_]: HttpMethods](
+sealed abstract class HttpBigQueryDataTransfer[F[_]: HttpMethods](
     projectName: BigQueryProjectName,
     dataTransferBaseUri: Uri,
     location: Location
@@ -348,10 +348,10 @@ object HttpBigQueryDataTransfer {
       tokenF: F[UserAccountAccessToken],
       location: Location,
       client: Client[F],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): BigQueryDataTransfer[F] = {
     implicit val httpMethods: HttpMethods[F] =
-      HttpMethods.impl(client, tokenF.widen, retryConfiguration)
+      HttpMethods.impl(client, tokenF.widen, retryPolicy)
 
     impl(projectName, location)
   }
@@ -364,17 +364,17 @@ object HttpBigQueryDataTransfer {
       projectName,
       dataTransferUri,
       location
-    )
+    ) {}
 
   def create[F[_]: Sync: Temporal](
       projectName: BigQueryProjectName,
       tokenF: F[UserAccountAccessToken],
       location: Location,
       client: Client[F],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): F[BigQueryDataTransfer[F]] =
     Sync[F].pure(
-      impl(projectName, tokenF, location, client, retryConfiguration)
+      impl(projectName, tokenF, location, client, retryPolicy)
     )
 
   def create[F[_]: Sync: Temporal: HttpMethods](

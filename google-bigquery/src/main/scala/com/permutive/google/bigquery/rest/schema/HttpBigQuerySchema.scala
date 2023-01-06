@@ -20,7 +20,6 @@ import cats.data.NonEmptyList
 import cats.effect.kernel.{Async, Concurrent}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
-import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.http.HttpMethods
 import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.models.schema.Access
@@ -48,8 +47,9 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityEncoder, Request, Uri}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import retry.RetryPolicy
 
-class HttpBigQuerySchema[F[_]: HttpMethods: Logger](
+sealed abstract class HttpBigQuerySchema[F[_]: HttpMethods: Logger] private (
     projectName: BigQueryProjectName,
     restBaseUri: Uri
 )(implicit F: Concurrent[F])
@@ -308,10 +308,10 @@ object HttpBigQuerySchema {
       projectName: BigQueryProjectName,
       tokenF: F[AccessToken],
       client: Client[F],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): F[BigQuerySchema[F]] = {
     implicit val httpMethods: HttpMethods[F] =
-      HttpMethods.impl(client, tokenF, retryConfiguration)
+      HttpMethods.impl(client, tokenF, retryPolicy)
 
     create(projectName)
   }
@@ -320,7 +320,7 @@ object HttpBigQuerySchema {
       projectName: BigQueryProjectName
   ): F[BigQuerySchema[F]] =
     Slf4jLogger.create[F].map { implicit l =>
-      new HttpBigQuerySchema(projectName, ApiEndpoints.baseRestUri)
+      new HttpBigQuerySchema(projectName, ApiEndpoints.baseRestUri) {}
     }
 
 }

@@ -20,16 +20,26 @@ object Exceptions {
 
   trait BigQueryException extends Throwable
 
-  case class FailedRequest(code: Int, description: String, body: String)
+  sealed abstract class FailedRequest private (val code: Int, val description: String, val body: String)
       extends RuntimeException(
         s"Failed request to $description, got response code: $code; body: $body"
       )
       with BigQueryException
 
-  case class RequestEntityNotFound(description: String)
+  object FailedRequest {
+    def apply(code: Int, description: String, body: String): FailedRequest =
+      new FailedRequest(code, description, body) {}
+  }
+
+  sealed abstract class RequestEntityNotFound private (val description: String)
       extends RuntimeException(
         s"Failed request to $description because the entity was not found"
       )
       with BigQueryException
+
+  object RequestEntityNotFound {
+    def apply(description: String): RequestEntityNotFound = new RequestEntityNotFound(description) {}
+
+  }
 
 }

@@ -22,12 +22,33 @@ import com.permutive.google.bigquery.models.WriteDisposition
 import com.permutive.google.bigquery.models.table.Field
 import com.permutive.google.bigquery.models.table.NewTypes._
 
-case class ScheduleQueryRequest(
-    displayName: DisplayName,
-    query: Query,
-    schedule: Schedule,
-    destinationDataset: DatasetId,
-    destinationTableName: TableId,
-    writeDisposition: WriteDisposition,
-    partitioningFieldName: Option[Field.Name]
+sealed abstract class ScheduleQueryRequest private (
+    val displayName: DisplayName,
+    val query: Query,
+    val schedule: Schedule,
+    val destinationDataset: DatasetId,
+    val destinationTableName: TableId,
+    val writeDisposition: WriteDisposition,
+    val partitioningFieldName: Option[Field.Name]
 )
+
+object ScheduleQueryRequest {
+  def apply(
+      displayName: DisplayName,
+      query: Query,
+      schedule: Schedule,
+      destinationDataset: DatasetId,
+      destinationTableName: TableId,
+      writeDisposition: WriteDisposition,
+      partitioningFieldName: Option[Field.Name]
+  ): ScheduleQueryRequest = new ScheduleQueryRequest(
+    displayName,
+    query,
+    schedule,
+    destinationDataset,
+    destinationTableName,
+    writeDisposition,
+    partitioningFieldName
+  ) {}
+
+}

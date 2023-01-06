@@ -26,10 +26,13 @@ import scala.concurrent.duration._
   *   How long to wait for a job to complete before raising a
   *   [[com.permutive.google.bigquery.rest.models.Exceptions.TimeoutException]]
   */
-case class PollSettings(
-    delay: FiniteDuration,
-    timeout: FiniteDuration
+sealed abstract class PollSettings private (
+    val delay: FiniteDuration,
+    val timeout: FiniteDuration
 ) {
+
+  private def copy(delay: FiniteDuration = delay, timeout: FiniteDuration = timeout) =
+    new PollSettings(delay, timeout) {}
 
   def withDelay(delay: FiniteDuration): PollSettings =
     copy(delay = delay)
@@ -40,6 +43,7 @@ case class PollSettings(
 }
 
 object PollSettings {
+  def apply(delay: FiniteDuration, timeout: FiniteDuration): PollSettings = new PollSettings(delay, timeout) {}
 
   /** Default value for [[PollSettings]]. 500ms poll delay and 5 minute timeout.
     */

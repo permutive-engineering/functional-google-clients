@@ -16,11 +16,13 @@
 
 package com.permutive.google.bigquery.rest.job
 
+import java.time.Instant
+import java.util.UUID
+
 import cats.data.NonEmptyList
 import cats.effect.kernel.{Async, Sync, Temporal}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
-import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.http.HttpMethods
 import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.models._
@@ -45,12 +47,11 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityEncoder, Request, Uri}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import retry.RetryPolicy
 
-import java.time.Instant
-import java.util.UUID
 import scala.concurrent.duration._
 
-class HttpBigQueryJob[F[_]: HttpMethods: Logger](
+sealed abstract class HttpBigQueryJob[F[_]: HttpMethods: Logger] private (
     projectName: BigQueryProjectName,
     restBaseUri: Uri
 )(implicit F: Async[F])
@@ -382,10 +383,10 @@ object HttpBigQueryJob {
       projectName: BigQueryProjectName,
       tokenF: F[AccessToken],
       client: Client[F],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): F[BigQueryJob[F]] = {
     implicit val httpMethods: HttpMethods[F] =
-      HttpMethods.impl(client, tokenF, retryConfiguration)
+      HttpMethods.impl(client, tokenF, retryPolicy)
 
     create(projectName)
   }
@@ -394,7 +395,7 @@ object HttpBigQueryJob {
       projectName: BigQueryProjectName
   ): F[BigQueryJob[F]] =
     Slf4jLogger.create[F].map { implicit l =>
-      new HttpBigQueryJob(projectName, ApiEndpoints.baseRestUri)
+      new HttpBigQueryJob(projectName, ApiEndpoints.baseRestUri) {}
     }
 
 }

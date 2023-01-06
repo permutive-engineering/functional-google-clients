@@ -19,11 +19,14 @@ package com.permutive.google.bigquery.datatransfer.models
 import com.permutive.google.bigquery.datatransfer.models.NewTypes.DisplayName
 import com.permutive.google.bigquery.models.NewTypes.DatasetId
 
-case class ScheduledQueryIdentity(
-    displayName: DisplayName,
-    destinationDataset: DatasetId
+sealed abstract class ScheduledQueryIdentity private (
+    val displayName: DisplayName,
+    val destinationDataset: DatasetId
 )
 object ScheduledQueryIdentity {
+
+  def apply(displayName: DisplayName, destinationDataset: DatasetId): ScheduledQueryIdentity =
+    new ScheduledQueryIdentity(displayName, destinationDataset) {}
 
   def fromScheduleQueryRequest(
       sqr: ScheduleQueryRequest

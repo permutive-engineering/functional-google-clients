@@ -22,17 +22,28 @@ import com.permutive.google.bigquery.models.table.Field
 import com.permutive.google.bigquery.rest.models.Cost
 import com.permutive.google.bigquery.rest.models.job.JobError
 
-case class SelectJobMetadata(
-    schema: NonEmptyList[Field],
-    totalRows: Long,
-    location: Option[Location],
-    totalBytesProcessed: Long,
-    cost: Cost,
-    cacheHit: Boolean,
-    errors: Option[NonEmptyList[JobError]]
+sealed abstract class SelectJobMetadata private (
+    val schema: NonEmptyList[Field],
+    val totalRows: Long,
+    val location: Option[Location],
+    val totalBytesProcessed: Long,
+    val cost: Cost,
+    val cacheHit: Boolean,
+    val errors: Option[NonEmptyList[JobError]]
 )
 
 object SelectJobMetadata {
+
+  def apply(
+      schema: NonEmptyList[Field],
+      totalRows: Long,
+      location: Option[Location],
+      totalBytesProcessed: Long,
+      cost: Cost,
+      cacheHit: Boolean,
+      errors: Option[NonEmptyList[JobError]]
+  ): SelectJobMetadata =
+    new SelectJobMetadata(schema, totalRows, location, totalBytesProcessed, cost, cacheHit, errors) {}
 
   def fromCompleteSelectJob(
       completeSelectJob: CompleteSelectJob

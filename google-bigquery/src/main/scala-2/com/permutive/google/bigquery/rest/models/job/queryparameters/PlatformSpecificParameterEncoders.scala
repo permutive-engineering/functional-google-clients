@@ -57,10 +57,10 @@ trait PlatformSpecificParameterEncoders {
       override def value(hlist: FieldType[K, H] :: T): QueryParameterValue = {
         val head = hEncoder.value.value(hlist.head)
         val tail = tEncoder.value(hlist.tail)
-        val structValues = tail.structValues.map { case ListMapLike(keyValues) =>
-          ListMapLike(name -> head :: keyValues)
+        val structValues = tail.structValues.map { l =>
+          ListMapLike(name -> head :: l.keyValues)
         }
-        tail.copy(structValues = structValues)
+        tail.setStructValues(structValues)
       }
 
       override val `type`: QueryParameterType = {
@@ -69,7 +69,7 @@ trait PlatformSpecificParameterEncoders {
         val structTypes = tail.structTypes.map(
           StructType(name = Some(name), `type` = `type`) :: _
         )
-        tail.copy(structTypes = structTypes)
+        tail.setStructTypes(structTypes)
       }
     }
 

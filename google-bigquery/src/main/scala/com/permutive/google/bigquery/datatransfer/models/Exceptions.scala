@@ -23,14 +23,19 @@ import com.permutive.google.bigquery.models.NewTypes._
 
 object Exceptions {
 
-  case class DuplicateScheduledQueryRequestException(
+  sealed abstract class DuplicateScheduledQueryRequestException(
       identities: NonEmptyList[ScheduledQueryIdentity]
   ) extends RuntimeException(
         s"Attempted to schedule queries but duplicate queries by identity are present in the request: ${identities.toList}"
       )
       with BigQueryException
 
-  case class ScheduledQueryExistsException(
+  object DuplicateScheduledQueryRequestException {
+    def apply(identities: NonEmptyList[ScheduledQueryIdentity]): DuplicateScheduledQueryRequestException =
+      new DuplicateScheduledQueryRequestException(identities) {}
+  }
+
+  sealed abstract class ScheduledQueryExistsException private (
       project: BigQueryProjectName,
       location: Location,
       displayName: DisplayName,
@@ -41,7 +46,15 @@ object Exceptions {
       )
       with BigQueryException
 
-  case class ScheduledQueriesExistException(
+  object ScheduledQueriesExistException {
+    def apply(
+        project: BigQueryProjectName,
+        location: Location,
+        identities: NonEmptyList[ScheduledQueryIdentity]
+    ): ScheduledQueriesExistException = new ScheduledQueriesExistException(project, location, identities) {}
+  }
+
+  sealed abstract class ScheduledQueriesExistException(
       project: BigQueryProjectName,
       location: Location,
       identities: NonEmptyList[ScheduledQueryIdentity]
@@ -49,5 +62,16 @@ object Exceptions {
         s"Attempted to create scheduled queries but scheduled queries with the identities ${identities.toList}; location `$location`; project `$project` already exist."
       )
       with BigQueryException
+
+  object ScheduledQueryExistsException {
+    def apply(
+        project: BigQueryProjectName,
+        location: Location,
+        displayName: DisplayName,
+        datasetId: DatasetId,
+        configIds: NonEmptyList[ConfigId]
+    ): ScheduledQueryExistsException =
+      new ScheduledQueryExistsException(project, location, displayName, datasetId, configIds) {}
+  }
 
 }
