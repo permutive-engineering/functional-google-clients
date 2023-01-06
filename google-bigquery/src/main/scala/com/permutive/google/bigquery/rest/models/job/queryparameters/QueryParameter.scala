@@ -96,7 +96,7 @@ sealed abstract class QueryParameterValue(
 
 object QueryParameterValue {
 
-  case class QueryParameterValueCC private (
+  final private case class QueryParameterValueCC private (
       override val value: Option[String],
       override val arrayValues: Option[List[QueryParameterValue]],
       override val structValues: Option[ListMapLike[String, QueryParameterValue]]
@@ -144,7 +144,7 @@ sealed abstract class QueryParameterType(
 
 object QueryParameterType {
 
-  sealed private case class QueryParameterTypeCC private (
+  final private case class QueryParameterTypeCC private (
       override val `type`: SQLType,
       override val arrayType: Option[QueryParameterType],
       override val structTypes: Option[List[StructType]]
