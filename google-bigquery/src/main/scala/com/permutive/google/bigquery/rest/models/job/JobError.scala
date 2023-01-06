@@ -18,7 +18,6 @@ package com.permutive.google.bigquery.rest.models.job
 
 import cats.data.NonEmptyList
 import com.permutive.google.bigquery.rest.models.api.ErrorProtoApi
-import io.scalaland.chimney.dsl._
 
 case class JobError(
     reason: String,
@@ -31,7 +30,7 @@ case class JobError(
 object JobError {
 
   private[rest] def one(e: ErrorProtoApi): JobError =
-    e.transformInto[JobError]
+    JobError(e.reason, e.location, e.message)
 
   private[rest] def many(
       e: Option[ErrorProtoApi],
@@ -45,12 +44,12 @@ object JobError {
   ): NonEmptyList[JobError] =
     es match {
       case Some(esList) => many(esList).getOrElse(NonEmptyList.one(one(e)))
-      case None         => NonEmptyList.one(one(e))
+      case None => NonEmptyList.one(one(e))
     }
 
   private[rest] def many(
       es: List[ErrorProtoApi]
   ): Option[NonEmptyList[JobError]] =
-    NonEmptyList.fromList(es.transformInto[List[JobError]])
+    NonEmptyList.fromList(es.map(one))
 
 }

@@ -21,10 +21,7 @@ import cats.effect.kernel.Temporal
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
 import com.permutive.google.bigquery.configuration.RetryConfiguration
-import com.permutive.google.bigquery.models.Exceptions.{
-  FailedRequest,
-  RequestEntityNotFound
-}
+import com.permutive.google.bigquery.models.Exceptions.{FailedRequest, RequestEntityNotFound}
 import fs2.Stream
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
@@ -35,8 +32,8 @@ import org.typelevel.ci.CIString
 
 trait HttpMethods[F[_]] {
 
-  def sendAuthorizedRequest[T](request: Request[F], description: => String)(
-      implicit ed: EntityDecoder[F, T]
+  def sendAuthorizedRequest[T](request: Request[F], description: => String)(implicit
+      ed: EntityDecoder[F, T]
   ): F[T]
 
   def sendRequest[T](request: Request[F], description: => String)(implicit
@@ -93,13 +90,13 @@ object HttpMethods {
           res <- sendRequest[T](req, description)
         } yield res
 
-      override def sendRequest[T](request: Request[F], description: => String)(
-          implicit ed: EntityDecoder[F, T]
+      override def sendRequest[T](request: Request[F], description: => String)(implicit
+          ed: EntityDecoder[F, T]
       ): F[T] =
         retry(client.expectOr[T](request)(failedRequest(description)))
 
-      override def sendAuthorizedGet[T](uri: Uri, description: => String)(
-          implicit ed: EntityDecoder[F, T]
+      override def sendAuthorizedGet[T](uri: Uri, description: => String)(implicit
+          ed: EntityDecoder[F, T]
       ): F[T] =
         for {
           req <- authorize(GET(uri))
@@ -111,14 +108,14 @@ object HttpMethods {
       ): F[T] =
         getRequest(GET(uri), description)
 
-      private def getRequest[T](request: Request[F], description: => String)(
-          implicit ed: EntityDecoder[F, T]
+      private def getRequest[T](request: Request[F], description: => String)(implicit
+          ed: EntityDecoder[F, T]
       ): F[T] =
         retry(
           client.expectOr[T](request) { resp =>
             resp.status match {
               case NotFound => RequestEntityNotFound(description).pure.widen
-              case _        => failedRequest(description)(resp)
+              case _ => failedRequest(description)(resp)
             }
           }
         )

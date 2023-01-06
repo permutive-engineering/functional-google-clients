@@ -24,7 +24,6 @@ import com.permutive.google.auth.oauth.models.UserAccountAccessToken
 import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import com.permutive.google.auth.oauth.user.models.NewTypes._
 import com.permutive.google.auth.oauth.utils.HttpUtils
-import io.scalaland.chimney.dsl._
 import org.http4s.Method.POST
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
@@ -42,9 +41,13 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 
   final private[this] val description = "user account"
 
-  final private[this] val apiToUserToken
-      : AccessTokenApi => UserAccountAccessToken =
-    _.into[UserAccountAccessToken].transform
+  final private[this] val apiToUserToken: AccessTokenApi => UserAccountAccessToken =
+    token =>
+      UserAccountAccessToken(
+        token.accessToken,
+        token.tokenType,
+        token.expiresIn
+      )
 
   override def authenticate(
       clientId: ClientId,
@@ -72,10 +75,9 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 object GoogleUserAccountOAuth {
 
   def create[F[_]: Async](httpClient: Client[F]): F[UserAccountOAuth[F]] =
-    for {
-      implicit0(lg: Logger[F]) <- Slf4jLogger.create[F]
-      googleOAuth <- Sync[F].delay(
+    Slf4jLogger.create[F].flatMap { implicit logger =>
+      Sync[F].delay(
         new GoogleUserAccountOAuth(Constants.googleOAuthRequestUri, httpClient)
       )
-    } yield googleOAuth
+    }
 }

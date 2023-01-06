@@ -49,12 +49,7 @@ object StreamUtils {
       (readMeta(init._1), resultStream)
     }
 
-  // This use of `forSome` is to avoid exposing the `ANY` type to the method caller directly as a third type parameter
-  // Without it they signature would be `[F[_], T, ANY](results: F[(ANY, Stream[F, T])])`
-  // Inference seems to break down if the `ANY` is removed and tuple is `(_, Stream[F, T])`
-  def flattenUnrolled[F[_], T](results: F[(ANY, Stream[F, T])] forSome {
-    type ANY
-  }): Stream[F, T] =
+  def flattenUnrolled[F[_], A, B](results: F[(A, Stream[F, B])]): Stream[F, B] =
     Stream.eval(results).flatMap(_._2)
 
 }

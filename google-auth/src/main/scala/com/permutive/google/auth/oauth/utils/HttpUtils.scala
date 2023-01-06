@@ -18,11 +18,11 @@ package com.permutive.google.auth.oauth.utils
 
 import cats.effect.kernel.Async
 import cats.syntax.all._
-import com.github.plokhotnyuk.jsoniter_scala.core.readFromArray
 import com.permutive.google.auth.oauth.models.FailedRequest
 import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import org.http4s.client.Client
 import org.http4s.{EntityDecoder, Request}
+import org.http4s.circe.CirceEntityDecoder._
 import org.typelevel.log4cats.Logger
 
 private[oauth] object HttpUtils {
@@ -35,14 +35,12 @@ private[oauth] object HttpUtils {
       F: Async[F]
   ): F[Option[AccessTokenApi]] =
     client
-      .expectOr[Array[Byte]](request) { resp =>
+      .expectOr[AccessTokenApi](request) { resp =>
         EntityDecoder
           .decodeText(resp)
           .map(FailedRequest(s"retrieve $description", _))
       }
-      .flatMap(bytes =>
-        F.delay(readFromArray[AccessTokenApi](bytes)).map(_.some)
-      )
+      .map[Option[AccessTokenApi]](Some(_))
       .handleErrorWith { e =>
         Logger[F].warn(e)(
           s"Failed to retrieve $description Access Token from Google"

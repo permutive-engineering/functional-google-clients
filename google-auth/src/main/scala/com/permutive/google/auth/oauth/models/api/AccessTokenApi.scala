@@ -16,12 +16,8 @@
 
 package com.permutive.google.auth.oauth.models.api
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.{
-  CodecMakerConfig,
-  JsonCodecMaker
-}
 import com.permutive.google.auth.oauth.models.AccessToken._
+import io.circe.Decoder
 
 private[oauth] case class AccessTokenApi(
     accessToken: Token,
@@ -31,11 +27,6 @@ private[oauth] case class AccessTokenApi(
 
 private[oauth] object AccessTokenApi {
 
-  implicit final val codec: JsonValueCodec[AccessTokenApi] =
-    JsonCodecMaker.make[AccessTokenApi](
-      CodecMakerConfig.withFieldNameMapper(fieldNameMapper =
-        JsonCodecMaker.enforce_snake_case
-      )
-    )
-
+  implicit final val decoder: Decoder[AccessTokenApi] =
+    Decoder.forProduct3("access_token", "token_type", "expiresIn")(AccessTokenApi.apply)
 }

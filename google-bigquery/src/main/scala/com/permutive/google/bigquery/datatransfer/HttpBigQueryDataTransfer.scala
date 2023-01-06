@@ -176,7 +176,7 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
       s"get a scheduled query with config ID `$configId`"
     ).map {
       case sq: ScheduledQueryResponseApi => ScheduledQuery.fromApi(sq).some
-      case _                             => None
+      case _ => None
     }
 
   // WARNING: This will return _all_ queries. It goes through each page until there is no next page token
@@ -194,8 +194,7 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
       destinationDataset: DatasetId
   ): F[List[ScheduledQuery]] = {
     val filter: ScheduledQueryResponseApi => Boolean =
-      sq =>
-        sq.displayName === displayName && sq.destinationDatasetId === destinationDataset
+      sq => sq.displayName === displayName && sq.destinationDatasetId === destinationDataset
 
     getConvertScheduledQueries(
       identity,
@@ -261,7 +260,7 @@ class HttpBigQueryDataTransfer[F[_]: HttpMethods](
         }
         .toList
 
-    raiseIfNonEmpty(dupes, DuplicateScheduledQueryRequestException)
+    raiseIfNonEmpty(dupes, DuplicateScheduledQueryRequestException(_))
   }
 
   private def raiseIfNonEmpty[T](

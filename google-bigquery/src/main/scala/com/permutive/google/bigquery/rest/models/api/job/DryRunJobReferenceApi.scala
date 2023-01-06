@@ -16,10 +16,7 @@
 
 package com.permutive.google.bigquery.rest.models.api.job
 
-import com.permutive.google.bigquery.models.NewTypes.{
-  BigQueryProjectName,
-  Location
-}
+import com.permutive.google.bigquery.models.NewTypes.{BigQueryProjectName, Location}
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 

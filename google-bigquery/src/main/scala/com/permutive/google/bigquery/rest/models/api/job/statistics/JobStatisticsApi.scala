@@ -36,9 +36,8 @@ private[rest] object JobStatisticsApi {
   implicit val decoder: Decoder[JobStatisticsApi] =
     QueryJobStatisticApi.decoder.map(identity)
 
-  implicit val encoder: Encoder[JobStatisticsApi] = Encoder.instance {
-    case qj: QueryJobStatisticApi =>
-      QueryJobStatisticApi.encoder(qj)
+  implicit val encoder: Encoder[JobStatisticsApi] = Encoder.instance { case qj: QueryJobStatisticApi =>
+    QueryJobStatisticApi.encoder(qj)
   }
 }
 
@@ -50,9 +49,8 @@ private[rest] object QueryJobStatisticApi {
   implicit val decoder: Decoder[QueryJobStatisticApi] =
     DryRunQueryJobStatisticsApi.decoder.map(identity)
 
-  implicit val encoder: Encoder[QueryJobStatisticApi] = Encoder.instance {
-    case d: DryRunQueryJobStatisticsApi =>
-      DryRunQueryJobStatisticsApi.encoder(d)
+  implicit val encoder: Encoder[QueryJobStatisticApi] = Encoder.instance { case d: DryRunQueryJobStatisticsApi =>
+    DryRunQueryJobStatisticsApi.encoder(d)
   }
 }
 

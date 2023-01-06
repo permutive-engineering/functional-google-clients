@@ -22,10 +22,7 @@ import com.permutive.google.bigquery.models.table.NewTypes._
 import com.permutive.google.bigquery.rest.models.job.NewTypes._
 import com.permutive.google.bigquery.rest.models.job._
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes.PageToken
-import com.permutive.google.bigquery.rest.models.job.results.{
-  DryRunQueryJob,
-  QueryJobResults
-}
+import com.permutive.google.bigquery.rest.models.job.results.{DryRunQueryJob, QueryJobResults}
 import cats.data.NonEmptyList
 import com.permutive.google.bigquery.rest.models.job.queryparameters.QueryParameter
 
@@ -41,8 +38,7 @@ trait BigQueryJob[F[_]] {
 
   /** Dry-run a BigQuery query, returning statistics on the query.
     *
-    * Does not require a jobId as BigQuery does not return them for dry-run
-    * jobs.
+    * Does not require a jobId as BigQuery does not return them for dry-run jobs.
     */
   def dryRunQuery(
       query: Query,

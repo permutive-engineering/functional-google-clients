@@ -25,9 +25,9 @@ import java.util.regex.Pattern
 
 import cats.effect.Sync
 import cats.syntax.all._
-import com.github.plokhotnyuk.jsoniter_scala.core._
-import com.github.plokhotnyuk.jsoniter_scala.macros._
 import com.permutive.google.auth.oauth.service.models.GoogleServiceAccount
+import io.circe.Decoder
+import io.circe.parser._
 
 object GoogleServiceAccountParser {
 
@@ -41,9 +41,9 @@ object GoogleServiceAccountParser {
   )
 
   object JsonGoogleServiceAccount {
-    implicit final val codec: JsonValueCodec[JsonGoogleServiceAccount] =
-      JsonCodecMaker.make[JsonGoogleServiceAccount](
-        CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforce_snake_case)
+    implicit final val decoder: Decoder[JsonGoogleServiceAccount] =
+      Decoder.forProduct6("type", "project_id", "private_key_id", "private_key", "client_email", "auth_uri")(
+        JsonGoogleServiceAccount.apply
       )
   }
 
@@ -51,9 +51,9 @@ object GoogleServiceAccountParser {
       path: Path
   )(implicit F: Sync[F]): F[GoogleServiceAccount] =
     for {
-      sa <- F.delay(
-        readFromArray[JsonGoogleServiceAccount](Files.readAllBytes(path))
-      )
+      bytes <- F.blocking(Files.readAllBytes(path))
+      string <- F.delay(new String(bytes))
+      sa <- decode[JsonGoogleServiceAccount](string).liftTo[F]
       pem <- loadPem(sa.privateKey)
       spec <- F.delay(new PKCS8EncodedKeySpec(pem))
       kf <- F.delay(KeyFactory.getInstance("RSA"))

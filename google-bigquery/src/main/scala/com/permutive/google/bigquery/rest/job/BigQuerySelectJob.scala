@@ -22,10 +22,7 @@ import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.rest.utils.StreamUtils
 import com.permutive.google.bigquery.rest.models.Exceptions._
 import com.permutive.google.bigquery.rest.models.job.NewTypes._
-import com.permutive.google.bigquery.rest.models.job.{
-  PaginationSettings,
-  PollSettings
-}
+import com.permutive.google.bigquery.rest.models.job.{PaginationSettings, PollSettings}
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes._
 import com.permutive.google.bigquery.rest.models.job.results.{
   CompleteDmlJob,
@@ -144,8 +141,7 @@ object BigQuerySelectJob {
           pageToken: Option[PageToken],
           paginationSettings: PaginationSettings = PaginationSettings.default
       ): F[(SelectJobMetadata, Stream[F, JobResultRow])] = {
-        val fetch
-            : Option[PageToken] => F[(CompleteSelectJob, Option[PageToken])] =
+        val fetch: Option[PageToken] => F[(CompleteSelectJob, Option[PageToken])] =
           getSelectJobResults(
             jobId,
             location,

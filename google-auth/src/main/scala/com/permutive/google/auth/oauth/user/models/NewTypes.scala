@@ -16,11 +16,25 @@
 
 package com.permutive.google.auth.oauth.user.models
 
+import io.circe.Decoder
+
 object NewTypes {
 
-  case class ClientId(value: String)
-      extends AnyVal // Using AnyVal so jsoniter can derive decoders for us
-  case class ClientSecret(value: String) extends AnyVal
-  case class RefreshToken(value: String) extends AnyVal
+  case class ClientId(value: String) extends AnyVal
+  object ClientId {
+    implicit val decoder: Decoder[ClientId] =
+      Decoder.decodeString.map(ClientId(_))
+  }
 
+  case class ClientSecret(value: String) extends AnyVal
+  object ClientSecret {
+    implicit val decoder: Decoder[ClientSecret] =
+      Decoder.decodeString.map(ClientSecret(_))
+  }
+
+  case class RefreshToken(value: String) extends AnyVal
+  object RefreshToken {
+    implicit val decoder: Decoder[RefreshToken] =
+      Decoder.decodeString.map(RefreshToken(_))
+  }
 }

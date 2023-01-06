@@ -16,7 +16,7 @@
 
 package com.permutive.google.auth.oauth
 
-import cats.MonadError
+import cats.MonadThrow
 import cats.effect.kernel.Async
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
@@ -31,7 +31,7 @@ import com.permutive.google.auth.oauth.metadata.{
 import com.permutive.google.auth.oauth.models.ServiceAccountAccessToken
 import org.http4s.client.Client
 
-class InstanceMetadataTokenProvider[F[_]: MonadError[*[_], Throwable]](
+class InstanceMetadataTokenProvider[F[_]: MonadThrow](
     auth: InstanceMetadataOAuth[F]
 ) extends TokenProvider[F, ServiceAccountAccessToken] {
   override val accessToken: F[ServiceAccountAccessToken] =
@@ -43,8 +43,7 @@ class InstanceMetadataTokenProvider[F[_]: MonadError[*[_], Throwable]](
 }
 
 object InstanceMetadataTokenProvider {
-  def apply[F[_]: InstanceMetadataTokenProvider]
-      : InstanceMetadataTokenProvider[F] = implicitly
+  def apply[F[_]: InstanceMetadataTokenProvider]: InstanceMetadataTokenProvider[F] = implicitly
 
   def google[F[_]: Async](
       httpClient: Client[F]
@@ -53,6 +52,6 @@ object InstanceMetadataTokenProvider {
       .create[F](httpClient)
       .map(new InstanceMetadataTokenProvider[F](_))
 
-  def noAuth[F[_]: MonadError[*[_], Throwable]] =
+  def noAuth[F[_]: MonadThrow] =
     new InstanceMetadataTokenProvider[F](new NoopInstanceMetadataOAuth[F])
 }

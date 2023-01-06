@@ -19,10 +19,7 @@ package com.permutive.google.bigquery.rest.models.api.schema
 import java.time.Instant
 
 import com.permutive.google.bigquery.models.table.Partitioning
-import com.permutive.google.bigquery.rest.models.api.{
-  TableReferenceApi,
-  TypeFormat
-}
+import com.permutive.google.bigquery.rest.models.api.{TableReferenceApi, TypeFormat}
 import com.permutive.google.bigquery.rest.models.api.TypeFormat.Int64Value
 import com.permutive.google.bigquery.rest.models.job.results.NewTypes.PageToken
 import enumeratum.EnumEntry.Uppercase
@@ -74,9 +71,7 @@ private[rest] object ViewDetailsApi {
 
 sealed private[rest] trait TableObjectType extends EnumEntry with Uppercase
 
-private[rest] object TableObjectType
-    extends Enum[TableObjectType]
-    with CirceEnum[TableObjectType] {
+private[rest] object TableObjectType extends Enum[TableObjectType] with CirceEnum[TableObjectType] {
   override val values: immutable.IndexedSeq[TableObjectType] = findValues
 
   case object Table extends TableObjectType

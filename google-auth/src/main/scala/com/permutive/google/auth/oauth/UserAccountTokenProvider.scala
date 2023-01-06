@@ -23,16 +23,9 @@ import cats.MonadError
 import cats.effect.kernel.{Async, Sync}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.UserAccountAccessToken
-import com.permutive.google.auth.oauth.user.crypto.{
-  GoogleClientSecretsParser,
-  GoogleRefreshTokenParser
-}
+import com.permutive.google.auth.oauth.user.crypto.{GoogleClientSecretsParser, GoogleRefreshTokenParser}
 import com.permutive.google.auth.oauth.user.models.NewTypes._
-import com.permutive.google.auth.oauth.user.{
-  GoogleUserAccountOAuth,
-  NoopUserAccountOAuth,
-  UserAccountOAuth
-}
+import com.permutive.google.auth.oauth.user.{GoogleUserAccountOAuth, NoopUserAccountOAuth, UserAccountOAuth}
 import com.permutive.google.auth.oauth.utils.ApplicationDefaultCredentials
 import org.http4s.client.Client
 
@@ -47,14 +40,13 @@ class UserAccountTokenProvider[F[_]](
 
   import UserAccountTokenProvider._
 
-  override val accessToken: F[UserAccountAccessToken] = {
+  override val accessToken: F[UserAccountAccessToken] =
     for {
       token <- auth.authenticate(clientId, clientSecret, refreshToken)
       tokenOrError <- token.fold(
         ME.raiseError[UserAccountAccessToken](FailedToGetUserToken)
       )(_.pure[F])
     } yield tokenOrError
-  }
 
 }
 
@@ -109,8 +101,7 @@ object UserAccountTokenProvider {
   private def path[F[_]](path: String)(implicit F: Sync[F]): F[Path] =
     F.delay(new File(path).toPath)
 
-  case object FailedToGetUserToken
-      extends RuntimeException("Failed to get user token")
+  case object FailedToGetUserToken extends RuntimeException("Failed to get user token")
 
   def noAuth[F[_]](implicit
       ME: MonadError[F, Throwable]

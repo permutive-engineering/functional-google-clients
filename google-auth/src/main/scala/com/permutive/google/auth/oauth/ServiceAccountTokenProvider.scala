@@ -24,11 +24,7 @@ import cats.effect.kernel.{Async, Sync}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models._
 import com.permutive.google.auth.oauth.service.crypto.GoogleServiceAccountParser
-import com.permutive.google.auth.oauth.service.{
-  GoogleServiceAccountOAuth,
-  NoopServiceAccountOAuth,
-  ServiceAccountOAuth
-}
+import com.permutive.google.auth.oauth.service.{GoogleServiceAccountOAuth, NoopServiceAccountOAuth, ServiceAccountOAuth}
 import org.http4s.client.Client
 
 class ServiceAccountTokenProvider[F[_]](
@@ -41,7 +37,7 @@ class ServiceAccountTokenProvider[F[_]](
 
   import ServiceAccountTokenProvider._
 
-  override val accessToken: F[ServiceAccountAccessToken] = {
+  override val accessToken: F[ServiceAccountAccessToken] =
     for {
       now <- F.delay(Instant.now())
       token <- auth.authenticate(
@@ -59,7 +55,6 @@ class ServiceAccountTokenProvider[F[_]](
         F.raiseError[ServiceAccountAccessToken](FailedToGetServiceToken)
       )(_.pure[F])
     } yield tokenOrError
-  }
 
 }
 
@@ -68,8 +63,7 @@ object ServiceAccountTokenProvider {
   def apply[F[_]: ServiceAccountTokenProvider]: ServiceAccountTokenProvider[F] =
     implicitly
 
-  case object FailedToGetServiceToken
-      extends RuntimeException("Failed to get service token")
+  case object FailedToGetServiceToken extends RuntimeException("Failed to get service token")
 
   def google[F[_]](
       serviceAccountPath: String,

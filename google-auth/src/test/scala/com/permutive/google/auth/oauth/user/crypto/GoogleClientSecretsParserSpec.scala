@@ -20,10 +20,7 @@ import java.nio.file.{Path, Paths}
 
 import cats.effect.IO
 import com.permutive.google.auth.oauth.user.models.GoogleUserAccount
-import com.permutive.google.auth.oauth.user.models.NewTypes.{
-  ClientId,
-  ClientSecret
-}
+import com.permutive.google.auth.oauth.user.models.NewTypes.{ClientId, ClientSecret}
 import munit.CatsEffectSuite
 
 class GoogleClientSecretsParserSpec extends CatsEffectSuite {

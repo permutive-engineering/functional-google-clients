@@ -17,11 +17,7 @@
 package com.permutive.google.bigquery.rest.models.api.schema
 
 import cats.data.NonEmptyList
-import com.permutive.google.bigquery.models.NewTypes.{
-  BigQueryProjectName,
-  DatasetId,
-  Location
-}
+import com.permutive.google.bigquery.models.NewTypes.{BigQueryProjectName, DatasetId, Location}
 import com.permutive.google.bigquery.models.schema.Access
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}

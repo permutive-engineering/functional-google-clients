@@ -62,7 +62,7 @@ class GoogleRefreshTokenParserSpec extends CatsEffectSuite {
 
     assert(caught match {
       case EmptyRefreshTokenFileException(p) if p == path => true
-      case _                                              => false
+      case _ => false
     })
   }
 

@@ -26,10 +26,7 @@ import com.permutive.google.bigquery.rest.models.api.TypeFormat.Int64Value
 import com.permutive.google.bigquery.rest.models.api.job.JobQueryResultApi
 import com.permutive.google.bigquery.rest.models.api.{ErrorProtoApi, SchemaApi}
 import com.permutive.google.bigquery.rest.models.job.JobError
-import com.permutive.google.bigquery.rest.models.job.results.NewTypes.{
-  JobResultRow,
-  PageToken
-}
+import com.permutive.google.bigquery.rest.models.job.results.NewTypes.{JobResultRow, PageToken}
 
 sealed trait QueryJobResults {
   def errors: Option[
@@ -103,7 +100,7 @@ object QueryJobResults {
       CompleteSelectJob(
         schema.fields,
         api.jobReference.location,
-        api.rows.flatMap(rows => NonEmptyList.fromList(rows.map(JobResultRow))),
+        api.rows.flatMap(rows => NonEmptyList.fromList(rows.map(JobResultRow(_)))),
         totalRows.value,
         api.pageToken,
         bytes.value,

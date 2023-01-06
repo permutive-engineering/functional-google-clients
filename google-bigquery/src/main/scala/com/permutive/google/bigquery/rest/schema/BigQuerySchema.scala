@@ -17,11 +17,7 @@
 package com.permutive.google.bigquery.rest.schema
 
 import cats.data.NonEmptyList
-import com.permutive.google.bigquery.models.NewTypes.{
-  DatasetId,
-  Location,
-  Query
-}
+import com.permutive.google.bigquery.models.NewTypes.{DatasetId, Location, Query}
 import com.permutive.google.bigquery.models.schema.Access
 import com.permutive.google.bigquery.models.table.NewTypes.TableId
 import com.permutive.google.bigquery.models.table.{Field, Partitioning}

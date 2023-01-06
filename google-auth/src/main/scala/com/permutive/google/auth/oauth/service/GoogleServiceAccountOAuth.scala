@@ -31,7 +31,6 @@ import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import com.permutive.google.auth.oauth.utils.HttpUtils
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import io.scalaland.chimney.dsl._
 import org.http4s.Method.POST
 import org.http4s._
 import org.http4s.client.Client
@@ -52,9 +51,13 @@ class GoogleServiceAccountOAuth[F[_]: Logger](
 
   final private[this] val description = "service account JWT"
 
-  final private[this] val apiToServiceToken
-      : AccessTokenApi => ServiceAccountAccessToken =
-    _.into[ServiceAccountAccessToken].transform
+  final private[this] val apiToServiceToken: AccessTokenApi => ServiceAccountAccessToken =
+    token =>
+      ServiceAccountAccessToken(
+        token.accessToken,
+        token.tokenType,
+        token.expiresIn
+      )
 
   final override def authenticate(
       iss: String,
@@ -97,15 +100,14 @@ object GoogleServiceAccountOAuth {
       key: RSAPrivateKey,
       httpClient: Client[F]
   ): F[ServiceAccountOAuth[F]] =
-    for {
-      implicit0(lg: Logger[F]) <- Slf4jLogger.create[F]
-      googleOAuth <- Sync[F].delay(
+    Slf4jLogger.create[F].flatMap { implicit logger =>
+      Sync[F].delay(
         new GoogleServiceAccountOAuth(
           key,
           Constants.googleOAuthRequestUri,
           httpClient
         )
       )
-    } yield googleOAuth
+    }
 
 }
