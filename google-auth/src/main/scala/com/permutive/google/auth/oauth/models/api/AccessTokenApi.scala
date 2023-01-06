@@ -28,12 +28,5 @@ private[oauth] case class AccessTokenApi(
 private[oauth] object AccessTokenApi {
 
   implicit final val decoder: Decoder[AccessTokenApi] =
-    Decoder.instance { cursor =>
-      for {
-        token <- cursor.get[Token]("access_token")
-        tokenType <- cursor.get[TokenType]("token_type")
-        expiresIn <- cursor.get[ExpiresIn]("expiresIn")
-      } yield AccessTokenApi(token, tokenType, expiresIn)
-    }
-
+    Decoder.forProduct3("access_token", "token_type", "expiresIn")(AccessTokenApi.apply)
 }

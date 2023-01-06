@@ -42,23 +42,9 @@ object GoogleServiceAccountParser {
 
   object JsonGoogleServiceAccount {
     implicit final val decoder: Decoder[JsonGoogleServiceAccount] =
-      Decoder.instance { cursor =>
-        for {
-          tpe <- cursor.get[String]("type")
-          projectId <- cursor.get[String]("project_id")
-          privateKeyId <- cursor.get[String]("private_key_id")
-          privateKey <- cursor.get[String]("private_key")
-          clientEmail <- cursor.get[String]("client_email")
-          authUri <- cursor.get[String]("auth_uri")
-        } yield JsonGoogleServiceAccount(
-          tpe,
-          projectId,
-          privateKeyId,
-          privateKey,
-          clientEmail,
-          authUri
-        )
-      }
+      Decoder.forProduct6("type", "project_id", "private_key_id", "private_key", "client_email", "auth_uri")(
+        JsonGoogleServiceAccount.apply
+      )
   }
 
   final def parse[F[_]](
