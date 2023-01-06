@@ -20,20 +20,19 @@ import cats.Applicative
 import cats.effect.kernel.Temporal
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
-import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.models.Exceptions.{FailedRequest, RequestEntityNotFound}
-import fs2.Stream
+import org.http4s._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.dsl.Http4sDsl
 import org.http4s.headers.Authorization
-import org.http4s._
 import org.typelevel.ci.CIString
+import retry._
 
 sealed abstract class HttpMethods[F[_]: Temporal] private (
     client: Client[F],
     tokenF: F[AccessToken],
-    retryConfiguration: Option[RetryConfiguration]
+    retryPolicy: Option[RetryPolicy[F]]
 ) {
   object Dsl extends Http4sDsl[F] with Http4sClientDsl[F]
 
@@ -41,20 +40,7 @@ sealed abstract class HttpMethods[F[_]: Temporal] private (
 
   // TODO replace with OSS retry library
   private def retry[A](fa: F[A]): F[A] =
-    retryConfiguration match {
-      case Some(conf) if conf.maxAttempts > 0 =>
-        Stream
-          .retry(
-            fa,
-            conf.delay,
-            conf.nextDelay,
-            conf.maxAttempts,
-            conf.retriable
-          )
-          .compile
-          .lastOrError
-      case _ => fa
-    }
+    retryPolicy.fold(fa)(policy => retryingOnAllErrors(policy, (_: Throwable, _) => Applicative[F].unit)(fa))
 
   def sendAuthorizedRequest[T](
       request: Request[F],
@@ -128,15 +114,15 @@ object HttpMethods {
   def impl[F[_]: Temporal](
       client: Client[F],
       tokenF: F[AccessToken],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): HttpMethods[F] =
-    new HttpMethods[F](client, tokenF, retryConfiguration) {}
+    new HttpMethods[F](client, tokenF, retryPolicy) {}
 
   def create[F[_]: Temporal](
       client: Client[F],
       tokenF: F[AccessToken],
-      retryConfiguration: Option[RetryConfiguration] = None
+      retryPolicy: Option[RetryPolicy[F]] = None
   ): F[HttpMethods[F]] =
-    Applicative[F].pure(impl(client, tokenF, retryConfiguration))
+    Applicative[F].pure(impl(client, tokenF, retryPolicy))
 
 }

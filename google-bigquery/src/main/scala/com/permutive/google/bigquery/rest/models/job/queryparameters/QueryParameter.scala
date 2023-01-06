@@ -22,6 +22,7 @@ import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import cats.syntax.functor._
 
+import scala.annotation.nowarn
 import scala.collection.immutable.ListMap
 
 /** Represents a BigQuery query parameter.
@@ -198,6 +199,7 @@ object StructType {
 }
 
 sealed abstract class ListMapLike[A, B] private (val keyValues: List[(A, B)]) {
+  @nowarn
   override def equals(obj: Any): Boolean = obj match {
     case l: ListMapLike[A, B] => Eq[ListMapLike[A, B]].eqv(this, l)
     case _ => false

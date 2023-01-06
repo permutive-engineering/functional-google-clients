@@ -117,6 +117,7 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
   .settings(
     name := "google-bigquery",
     libraryDependencies ++= Seq(
+      "com.github.cb372" %%% "cats-retry" % "3.1.0",
       "org.typelevel" %%% "cats-core" % Cats,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
       "io.circe" %%% "circe-generic" % Circe,
