@@ -29,7 +29,7 @@ import com.permutive.google.auth.oauth.user.{GoogleUserAccountOAuth, NoopUserAcc
 import com.permutive.google.auth.oauth.utils.ApplicationDefaultCredentials
 import org.http4s.client.Client
 
-class UserAccountTokenProvider[F[_]](
+final class UserAccountTokenProvider[F[_]] private (
     clientId: ClientId,
     clientSecret: ClientSecret,
     refreshToken: RefreshToken,

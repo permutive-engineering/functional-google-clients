@@ -27,6 +27,17 @@ import io.circe.{Decoder, HCursor}
 
 object ApplicationDefaultCredentials {
 
+  sealed abstract class Credentials private (
+      val clientId: ClientId,
+      val clientSecret: ClientSecret,
+      val refreshToken: RefreshToken
+  )
+
+  object Credentials {
+    private[utils] def apply(id: ClientId, secret: ClientSecret, token: RefreshToken): Credentials =
+      new Credentials(id, secret, token) {}
+  }
+
   implicit val decodeCredentials: Decoder[Credentials] = (c: HCursor) =>
     for {
       id <- c.downField("client_id").as[String]
@@ -37,12 +48,6 @@ object ApplicationDefaultCredentials {
       ClientSecret(secret),
       RefreshToken(refresh)
     )
-
-  case class Credentials(
-      clientId: ClientId,
-      clientSecret: ClientSecret,
-      refreshToken: RefreshToken
-  )
 
   // adapted from com.google.api.client.googleapis.auth.oauth2.DefaultCredentialProvider
   def read[F[_]: Async]: F[Credentials] =

@@ -19,7 +19,7 @@ import cats.Applicative
 import com.permutive.google.auth.oauth.models.AccessToken.{ExpiresIn, Token, TokenType}
 import com.permutive.google.auth.oauth.models.ServiceAccountAccessToken
 
-class NoopInstanceMetadataOAuth[F[_]: Applicative] extends InstanceMetadataOAuth[F] {
+final class NoopInstanceMetadataOAuth[F[_]: Applicative] extends InstanceMetadataOAuth[F] {
   override def authenticate: F[Option[ServiceAccountAccessToken]] =
     Applicative[F].pure(
       Some(

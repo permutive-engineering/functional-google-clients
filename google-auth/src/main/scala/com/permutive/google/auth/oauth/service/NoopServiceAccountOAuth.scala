@@ -24,7 +24,7 @@ import com.permutive.google.auth.oauth.models.ServiceAccountAccessToken
 
 import scala.concurrent.duration._
 
-class NoopServiceAccountOAuth[F[_]](implicit F: Applicative[F]) extends ServiceAccountOAuth[F] {
+final class NoopServiceAccountOAuth[F[_]](implicit F: Applicative[F]) extends ServiceAccountOAuth[F] {
 
   final override def authenticate(
       iss: String,

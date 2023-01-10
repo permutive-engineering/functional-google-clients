@@ -18,68 +18,48 @@ package com.permutive.google.auth.oauth.user.crypto
 
 import java.nio.file.{Files, Path}
 
+import cats.Eq
 import cats.effect.Sync
 import cats.syntax.all._
-import com.permutive.google.auth.oauth.user.models.GoogleUserAccount
 import com.permutive.google.auth.oauth.user.models.NewTypes._
-import io.circe.Decoder
-import io.circe.parser._
+import io.circe
+import io.circe.parser
 
 object GoogleClientSecretsParser {
+  sealed abstract class GoogleUserAccount(val clientId: ClientId, val clientSecret: ClientSecret) {
+    override def equals(obj: Any): Boolean = obj match {
+      case other: GoogleUserAccount => Eq[GoogleUserAccount].eqv(this, other)
+      case _ => false
+    }
+  }
 
-  case class JsonGoogleInstalledSecrets(
-      installed: JsonGoogleClientSecrets
-  )
+  object GoogleUserAccount {
+    private[crypto] def apply(clientId: ClientId, clientSecret: ClientSecret): GoogleUserAccount =
+      new GoogleUserAccount(clientId, clientSecret) {}
 
-  case class JsonGoogleClientSecrets(
-      clientId: ClientId,
-      projectId: String,
-      authUri: String,
-      tokenUri: String,
-      authProviderX509CertUrl: String,
-      clientSecret: ClientSecret,
-      redirectUris: List[String]
-  )
-
-  object JsonGoogleInstalledSecrets {
-    implicit final val decoder: Decoder[JsonGoogleInstalledSecrets] =
-      Decoder.instance { hc =>
-        val cursor = hc.downField("installed")
-
-        for {
-          clientId <- cursor.get[ClientId]("client_id")
-          projectId <- cursor.get[String]("project_id")
-          authUri <- cursor.get[String]("auth_uri")
-          tokenUri <- cursor.get[String]("token_uri")
-          authProviderX509CertUrl <- cursor.get[String](
-            "auth_provider_x509_cert_url"
-          )
-          clientSecret <- cursor.get[ClientSecret]("client_secret")
-          redirectUris <- cursor.get[List[String]]("redirect_uris")
-        } yield JsonGoogleInstalledSecrets(
-          JsonGoogleClientSecrets(
-            clientId,
-            projectId,
-            authUri,
-            tokenUri,
-            authProviderX509CertUrl,
-            clientSecret,
-            redirectUris
-          )
-        )
-      }
+    implicit val eq: Eq[GoogleUserAccount] = Eq.instance { (x, y) =>
+      x.clientId == y.clientId && x.clientSecret == y.clientSecret
+    }
   }
 
   final def parse[F[_]](
       path: Path
-  )(implicit F: Sync[F]): F[GoogleUserAccount] =
+  )(implicit F: Sync[F]): F[GoogleUserAccount] = {
+    def parseAccount(string: String): Either[circe.Error, GoogleUserAccount] = for {
+      json <- parser.parse(string)
+      cursor = json.hcursor.downField("installed")
+      clientId <- cursor.get[ClientId]("client_id")
+      clientSecret <- cursor.get[ClientSecret]("client_secret")
+    } yield GoogleUserAccount(
+      clientId,
+      clientSecret
+    )
+
     for {
       bytes <- F.blocking(Files.readAllBytes(path))
       string <- F.delay(new String(bytes))
-      secrets <- decode[JsonGoogleInstalledSecrets](string).liftTo[F]
-    } yield GoogleUserAccount(
-      secrets.installed.clientId,
-      secrets.installed.clientSecret
-    )
+      account <- parseAccount(string).liftTo[F]
+    } yield account
+  }
 
 }

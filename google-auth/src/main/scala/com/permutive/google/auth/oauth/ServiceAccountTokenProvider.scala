@@ -27,7 +27,7 @@ import com.permutive.google.auth.oauth.service.crypto.GoogleServiceAccountParser
 import com.permutive.google.auth.oauth.service.{GoogleServiceAccountOAuth, NoopServiceAccountOAuth, ServiceAccountOAuth}
 import org.http4s.client.Client
 
-class ServiceAccountTokenProvider[F[_]](
+final class ServiceAccountTokenProvider[F[_]] private (
     emailAddress: String,
     scope: List[String],
     auth: ServiceAccountOAuth[F]

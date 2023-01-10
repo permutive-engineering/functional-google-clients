@@ -31,7 +31,7 @@ import org.http4s.{Uri, UrlForm}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class GoogleUserAccountOAuth[F[_]: Async: Logger](
+final class GoogleUserAccountOAuth[F[_]: Async: Logger] private (
     googleOAuthRequestUri: Uri,
     httpClient: Client[F]
 ) extends UserAccountOAuth[F]
@@ -41,7 +41,7 @@ class GoogleUserAccountOAuth[F[_]: Async: Logger](
 
   final private[this] val description = "user account"
 
-  final private[this] val apiToUserToken: AccessTokenApi => UserAccountAccessToken =
+  private[this] val apiToUserToken: AccessTokenApi => UserAccountAccessToken =
     token =>
       UserAccountAccessToken(
         token.accessToken,

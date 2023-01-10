@@ -18,7 +18,6 @@ package com.permutive.google.auth.oauth.utils
 
 import cats.effect.kernel.Async
 import cats.syntax.all._
-import com.permutive.google.auth.oauth.models.FailedRequest
 import com.permutive.google.auth.oauth.models.api.AccessTokenApi
 import org.http4s.client.Client
 import org.http4s.{EntityDecoder, Request}
@@ -26,6 +25,11 @@ import org.http4s.circe.CirceEntityDecoder._
 import org.typelevel.log4cats.Logger
 
 private[oauth] object HttpUtils {
+
+  final private case class FailedRequest private (description: String, body: String)
+      extends RuntimeException(
+        s"Failed request to $description, got response: $body"
+      )
 
   def fetchAccessTokenApi[F[_]: Logger](
       client: Client[F],
