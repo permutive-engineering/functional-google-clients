@@ -38,7 +38,6 @@ sealed abstract class HttpMethods[F[_]: Temporal] private (
 
   import Dsl._
 
-  // TODO replace with OSS retry library
   private def retry[A](fa: F[A]): F[A] =
     retryPolicy.fold(fa)(policy => retryingOnAllErrors(policy, (_: Throwable, _) => Applicative[F].unit)(fa))
 
