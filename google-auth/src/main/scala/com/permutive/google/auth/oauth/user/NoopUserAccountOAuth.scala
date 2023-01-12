@@ -21,7 +21,7 @@ import com.permutive.google.auth.oauth.models.AccessToken._
 import com.permutive.google.auth.oauth.models.UserAccountAccessToken
 import com.permutive.google.auth.oauth.user.models.NewTypes._
 
-class NoopUserAccountOAuth[F[_]](implicit F: Applicative[F]) extends UserAccountOAuth[F] {
+final class NoopUserAccountOAuth[F[_]](implicit F: Applicative[F]) extends UserAccountOAuth[F] {
 
   override def authenticate(
       clientId: ClientId,

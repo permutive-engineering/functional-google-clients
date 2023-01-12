@@ -38,7 +38,7 @@ import org.http4s.client.dsl.Http4sClientDsl
 
 import scala.concurrent.duration._
 
-class GoogleServiceAccountOAuth[F[_]: Logger](
+final class GoogleServiceAccountOAuth[F[_]: Logger] private (
     key: RSAPrivateKey,
     googleOAuthRequestUri: Uri,
     httpClient: Client[F]
@@ -47,11 +47,11 @@ class GoogleServiceAccountOAuth[F[_]: Logger](
 ) extends ServiceAccountOAuth[F]
     with Http4sClientDsl[F] {
 
-  final private[this] val algorithm = Algorithm.RSA256(null: RSAPublicKey, key)
+  private[this] val algorithm = Algorithm.RSA256(null: RSAPublicKey, key)
 
-  final private[this] val description = "service account JWT"
+  private[this] val description = "service account JWT"
 
-  final private[this] val apiToServiceToken: AccessTokenApi => ServiceAccountAccessToken =
+  private[this] val apiToServiceToken: AccessTokenApi => ServiceAccountAccessToken =
     token =>
       ServiceAccountAccessToken(
         token.accessToken,
@@ -59,7 +59,7 @@ class GoogleServiceAccountOAuth[F[_]: Logger](
         token.expiresIn
       )
 
-  final override def authenticate(
+  override def authenticate(
       iss: String,
       scope: String,
       exp: Instant,
@@ -91,7 +91,7 @@ class GoogleServiceAccountOAuth[F[_]: Logger](
     } yield res.map(apiToServiceToken)
   }
 
-  final override val maxDuration: FiniteDuration = 1.hour
+  override val maxDuration: FiniteDuration = 1.hour
 }
 
 object GoogleServiceAccountOAuth {

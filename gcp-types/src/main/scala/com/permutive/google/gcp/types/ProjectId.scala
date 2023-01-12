@@ -36,4 +36,7 @@ object ProjectId {
 
   def from(string: String): Either[String, ProjectId] =
     fromString(string).toRight(onError(string))
+
+  def unsafeFrom(string: String): ProjectId =
+    from(string).fold[ProjectId](err => throw new IllegalArgumentException(err), identity)
 }

@@ -32,7 +32,7 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 // Obtains OAuth token from instance metadata
 // https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#applications
-class GoogleInstanceMetadataOAuth[F[_]: Async: Logger](
+final class GoogleInstanceMetadataOAuth[F[_]: Async: Logger] private (
     googleInstanceMetadataTokenUri: Uri,
     httpClient: Client[F]
 ) extends InstanceMetadataOAuth[F]

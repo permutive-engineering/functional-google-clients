@@ -31,7 +31,7 @@ import com.permutive.google.auth.oauth.metadata.{
 import com.permutive.google.auth.oauth.models.ServiceAccountAccessToken
 import org.http4s.client.Client
 
-class InstanceMetadataTokenProvider[F[_]: MonadThrow](
+final class InstanceMetadataTokenProvider[F[_]: MonadThrow] private (
     auth: InstanceMetadataOAuth[F]
 ) extends TokenProvider[F, ServiceAccountAccessToken] {
   override val accessToken: F[ServiceAccountAccessToken] =

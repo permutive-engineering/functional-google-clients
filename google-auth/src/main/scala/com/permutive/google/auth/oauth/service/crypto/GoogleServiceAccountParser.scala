@@ -25,43 +25,39 @@ import java.util.regex.Pattern
 
 import cats.effect.Sync
 import cats.syntax.all._
-import com.permutive.google.auth.oauth.service.models.GoogleServiceAccount
-import io.circe.Decoder
-import io.circe.parser._
+import io.circe
+import io.circe.parser
 
 object GoogleServiceAccountParser {
+  sealed abstract class GoogleServiceAccount private (val clientEmail: String, val privateKey: RSAPrivateKey)
 
-  case class JsonGoogleServiceAccount(
-      `type`: String,
-      projectId: String,
-      privateKeyId: String,
-      privateKey: String,
-      clientEmail: String,
-      authUri: String
-  )
-
-  object JsonGoogleServiceAccount {
-    implicit final val decoder: Decoder[JsonGoogleServiceAccount] =
-      Decoder.forProduct6("type", "project_id", "private_key_id", "private_key", "client_email", "auth_uri")(
-        JsonGoogleServiceAccount.apply
-      )
+  object GoogleServiceAccount {
+    private[crypto] def apply(clientEmail: String, privateKey: RSAPrivateKey): GoogleServiceAccount =
+      new GoogleServiceAccount(clientEmail, privateKey) {}
   }
 
   final def parse[F[_]](
       path: Path
-  )(implicit F: Sync[F]): F[GoogleServiceAccount] =
+  )(implicit F: Sync[F]): F[GoogleServiceAccount] = {
+    def parseJson(string: String): Either[circe.Error, (String, String)] = for {
+      json <- parser.parse(string)
+      privateKey <- json.hcursor.get[String]("private_key")
+      clientEmail <- json.hcursor.get[String]("client_email")
+    } yield (privateKey, clientEmail)
+
     for {
       bytes <- F.blocking(Files.readAllBytes(path))
       string <- F.delay(new String(bytes))
-      sa <- decode[JsonGoogleServiceAccount](string).liftTo[F]
-      pem <- loadPem(sa.privateKey)
+      keyEmail <- parseJson(string).liftTo[F]
+      pem <- loadPem(keyEmail._1)
       spec <- F.delay(new PKCS8EncodedKeySpec(pem))
       kf <- F.delay(KeyFactory.getInstance("RSA"))
       key <- F.delay(kf.generatePrivate(spec).asInstanceOf[RSAPrivateKey])
     } yield GoogleServiceAccount(
-      clientEmail = sa.clientEmail,
+      clientEmail = keyEmail._2,
       privateKey = key
     )
+  }
 
   final private[this] val privateKeyPattern =
     Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*")
