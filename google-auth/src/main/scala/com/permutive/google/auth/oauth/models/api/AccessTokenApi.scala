@@ -28,5 +28,5 @@ private[oauth] case class AccessTokenApi(
 private[oauth] object AccessTokenApi {
 
   implicit final val decoder: Decoder[AccessTokenApi] =
-    Decoder.forProduct3("access_token", "token_type", "expiresIn")(AccessTokenApi.apply)
+    Decoder.forProduct3("access_token", "token_type", "expires_in")(AccessTokenApi.apply)
 }
