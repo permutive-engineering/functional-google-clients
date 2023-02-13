@@ -20,6 +20,7 @@ import cats.Applicative
 import cats.effect.kernel.Temporal
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
+import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.models.Exceptions.{FailedRequest, RequestEntityNotFound}
 import org.http4s._
 import org.http4s.client.Client
@@ -32,14 +33,14 @@ import retry._
 sealed abstract class HttpMethods[F[_]: Temporal] private (
     client: Client[F],
     tokenF: F[AccessToken],
-    retryPolicy: Option[RetryPolicy[F]]
+    retryConfiguration: Option[RetryConfiguration[F]]
 ) {
   object Dsl extends Http4sDsl[F] with Http4sClientDsl[F]
 
   import Dsl._
 
   private def retry[A](fa: F[A]): F[A] =
-    retryPolicy.fold(fa)(policy => retryingOnAllErrors(policy, (_: Throwable, _) => Applicative[F].unit)(fa))
+    retryConfiguration.fold(fa)(config => retryingOnSomeErrors(config.policy, config.shouldRetry, config.onError)(fa))
 
   def sendAuthorizedRequest[T](
       request: Request[F],
@@ -113,15 +114,15 @@ object HttpMethods {
   def impl[F[_]: Temporal](
       client: Client[F],
       tokenF: F[AccessToken],
-      retryPolicy: Option[RetryPolicy[F]] = None
+      retryConfiguration: Option[RetryConfiguration[F]] = None
   ): HttpMethods[F] =
-    new HttpMethods[F](client, tokenF, retryPolicy) {}
+    new HttpMethods[F](client, tokenF, retryConfiguration) {}
 
   def create[F[_]: Temporal](
       client: Client[F],
       tokenF: F[AccessToken],
-      retryPolicy: Option[RetryPolicy[F]] = None
+      retryConfiguration: Option[RetryConfiguration[F]] = None
   ): F[HttpMethods[F]] =
-    Applicative[F].pure(impl(client, tokenF, retryPolicy))
+    Applicative[F].pure(impl(client, tokenF, retryConfiguration))
 
 }

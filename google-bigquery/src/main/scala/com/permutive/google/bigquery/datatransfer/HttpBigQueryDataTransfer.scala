@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import cats.effect.kernel.{Concurrent, Sync, Temporal}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models._
+import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.datatransfer.models.Exceptions._
 import com.permutive.google.bigquery.datatransfer.models.NewTypes._
 import com.permutive.google.bigquery.datatransfer.models._
@@ -37,7 +38,6 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityDecoder, EntityEncoder, Request, Uri}
-import retry.RetryPolicy
 
 // [Ben - 2019-02-09]
 // This is currently set to force a user access token due to limitations in the Google API.
@@ -348,10 +348,10 @@ object HttpBigQueryDataTransfer {
       tokenF: F[UserAccountAccessToken],
       location: Location,
       client: Client[F],
-      retryPolicy: Option[RetryPolicy[F]] = None
+      retryConfiguration: Option[RetryConfiguration[F]] = None
   ): BigQueryDataTransfer[F] = {
     implicit val httpMethods: HttpMethods[F] =
-      HttpMethods.impl(client, tokenF.widen, retryPolicy)
+      HttpMethods.impl(client, tokenF.widen, retryConfiguration)
 
     impl(projectName, location)
   }
@@ -371,10 +371,10 @@ object HttpBigQueryDataTransfer {
       tokenF: F[UserAccountAccessToken],
       location: Location,
       client: Client[F],
-      retryPolicy: Option[RetryPolicy[F]] = None
+      retryConfiguration: Option[RetryConfiguration[F]] = None
   ): F[BigQueryDataTransfer[F]] =
     Sync[F].pure(
-      impl(projectName, tokenF, location, client, retryPolicy)
+      impl(projectName, tokenF, location, client, retryConfiguration)
     )
 
   def create[F[_]: Sync: Temporal: HttpMethods](
