@@ -23,6 +23,7 @@ import cats.data.NonEmptyList
 import cats.effect.kernel.{Async, Sync, Temporal}
 import cats.syntax.all._
 import com.permutive.google.auth.oauth.models.AccessToken
+import com.permutive.google.bigquery.configuration.RetryConfiguration
 import com.permutive.google.bigquery.http.HttpMethods
 import com.permutive.google.bigquery.models.NewTypes._
 import com.permutive.google.bigquery.models._
@@ -47,7 +48,6 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityEncoder, Request, Uri}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import retry.RetryPolicy
 
 import scala.concurrent.duration._
 
@@ -383,10 +383,10 @@ object HttpBigQueryJob {
       projectName: BigQueryProjectName,
       tokenF: F[AccessToken],
       client: Client[F],
-      retryPolicy: Option[RetryPolicy[F]] = None
+      retryConfiguration: Option[RetryConfiguration[F]] = None
   ): F[BigQueryJob[F]] = {
     implicit val httpMethods: HttpMethods[F] =
-      HttpMethods.impl(client, tokenF, retryPolicy)
+      HttpMethods.impl(client, tokenF, retryConfiguration)
 
     create(projectName)
   }
