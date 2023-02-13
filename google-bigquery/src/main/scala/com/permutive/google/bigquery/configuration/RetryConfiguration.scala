@@ -49,7 +49,11 @@ object RetryConfiguration {
   )
 
   def apply[F[_]: Applicative](policy: RetryPolicy[F], shouldRetry: Throwable => Boolean): RetryConfiguration[F] =
-    apply[F](policy, th => Applicative[F].pure(shouldRetry(th)), (_: Throwable, _: RetryDetails) => Applicative[F].unit)
+    apply[F](
+      policy,
+      (th: Throwable) => Applicative[F].pure(shouldRetry(th)),
+      (_: Throwable, _: RetryDetails) => Applicative[F].unit
+    )
 
   def apply[F[_]](
       policy: RetryPolicy[F],
