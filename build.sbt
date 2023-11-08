@@ -13,24 +13,24 @@ ThisBuild / developers := List(
 // publish to s01.oss.sonatype.org (set to true to publish to oss.sonatype.org instead)
 ThisBuild / tlSonatypeUseLegacyHost := true
 
-val CatsEffect = "3.4.2"
+val CatsEffect = "3.5.2"
 
-val Cats = "2.9.0"
+val Cats = "2.10.0"
 
-val Chimney = "0.6.2"
+val Chimney = "0.8.2"
 
-val Circe = "0.14.3"
+val Circe = "0.14.6"
 
-val Http4s = "0.23.16"
+val Http4s = "0.23.23"
 
 val Munit = "0.7.29"
 
 val MunitCE3 = "1.0.7"
 
-val Pureconfig = "0.17.2"
+val Pureconfig = "0.17.4"
 
-val Scala213 = "2.13.10"
-ThisBuild / crossScalaVersions := Seq("2.12.14", Scala213, "3.2.1")
+val Scala213 = "2.13.12"
+ThisBuild / crossScalaVersions := Seq("2.12.18", Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root =
@@ -69,11 +69,11 @@ lazy val googleAuth = crossProject(JVMPlatform)
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
       "io.circe" %%% "circe-generic" % Circe,
       "io.circe" %%% "circe-parser" % Circe,
-      "io.circe" %%% "circe-fs2" % "0.14.0",
+      "io.circe" %%% "circe-fs2" % "0.14.1",
       "org.http4s" %%% "http4s-client" % Http4s,
       "org.http4s" %%% "http4s-circe" % Http4s,
-      "org.typelevel" %%% "log4cats-slf4j" % "2.5.0",
-      "com.auth0" % "java-jwt" % "4.2.1",
+      "org.typelevel" %%% "log4cats-slf4j" % "2.6.0",
+      "com.auth0" % "java-jwt" % "4.4.0",
       "com.permutive" %%% "refreshable" % "1.1.0",
       "org.scala-lang.modules" %%% "scala-java8-compat" % "1.0.2",
       "org.typelevel" %%% "cats-effect" % CatsEffect % Test,
@@ -121,11 +121,11 @@ lazy val googleBigQuery = crossProject(JVMPlatform)
       "org.typelevel" %%% "cats-core" % Cats,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffect,
       "io.circe" %%% "circe-generic" % Circe,
-      "com.beachape" %%% "enumeratum-circe" % "1.7.2",
+      "com.beachape" %%% "enumeratum-circe" % "1.7.3",
       "org.http4s" %%% "http4s-client" % Http4s,
       "org.http4s" %%% "http4s-circe" % Http4s,
       "org.http4s" %%% "http4s-dsl" % Http4s,
-      "org.typelevel" %%% "log4cats-slf4j" % "2.5.0"
+      "org.typelevel" %%% "log4cats-slf4j" % "2.6.0"
     ),
     libraryDependencies ++= {
       if (tlIsScala3.value) Seq.empty

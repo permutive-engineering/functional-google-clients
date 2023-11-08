@@ -18,12 +18,13 @@ package com.permutive.google.bigquery.models.table
 
 import cats.Eq
 import cats.data.NonEmptyList
-import cats.syntax.functor._
+import cats.syntax.all._
 import com.permutive.google.bigquery.models.SQLType
 import enumeratum.EnumEntry.Uppercase
 import enumeratum.{CirceEnum, Enum, EnumEntry}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder, Json}
+import io.circe.syntax._
 
 // Documentation: https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#resource
 
@@ -51,13 +52,19 @@ object Field {
   ): Field = new Field(name, `type`, mode, description, fields) {}
 
   // Exists so that Circe instances can be derived for Scala 3
-  sealed private case class FieldCC private (
+  final case class FieldCC private (
       override val name: Field.Name,
       override val `type`: SQLType,
       override val mode: Option[Field.Mode],
       override val description: Option[String],
       override val fields: Option[NonEmptyList[Field]]
   ) extends Field(name, `type`, mode, description, fields)
+
+  object FieldCC {
+    implicit val decoder: Decoder[FieldCC] = deriveDecoder[FieldCC].widen
+    implicit val encoder: Encoder[FieldCC] =
+      deriveEncoder[FieldCC]
+  }
 
   case class Name(value: String) extends AnyVal
 
@@ -87,8 +94,25 @@ object Field {
     x.name == y.name && x.`type` == y.`type` && x.mode == y.mode && x.description == y.description && x.fields == y.fields
   }
 
-  implicit val decoder: Decoder[Field] = deriveDecoder[FieldCC].widen
-  implicit val encoder: Encoder[Field] =
-    deriveEncoder[FieldCC].contramap[Field](f => FieldCC(f.name, f.`type`, f.mode, f.description, f.fields))
+  implicit def decoder: Decoder[Field] = Decoder.instance { c =>
+    for {
+      name <- c.get[Name]("name")
+      typ <- c.get[SQLType]("type")
+      mode <- c.get[Option[Mode]]("mode")
+      description <- c.get[Option[String]]("description")
+      fields <- c.get[Option[NonEmptyList[Field]]]("fields")
+    } yield Field(name, typ, mode, description, fields)
+  }
+  implicit def encoder: Encoder[Field] =
+    Encoder.instance(
+      f =>
+        Json.obj(
+          "name" := f.name,
+          "type" := f.`type`,
+          "mode" := f.mode,
+          "description" := f.description,
+          "fields" := f.fields
+        )
+    )
 
 }

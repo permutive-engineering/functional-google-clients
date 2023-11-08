@@ -26,7 +26,7 @@ import org.typelevel.log4cats.Logger
 
 private[oauth] object HttpUtils {
 
-  final private case class FailedRequest private (description: String, body: String)
+  final private case class FailedRequest(description: String, body: String)
       extends RuntimeException(
         s"Failed request to $description, got response: $body"
       )

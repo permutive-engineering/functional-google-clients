@@ -18,9 +18,8 @@ package com.permutive.google.bigquery.rest.models.job.queryparameters
 
 import cats.kernel.Eq
 import com.permutive.google.bigquery.models.SQLType
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
-import cats.syntax.functor._
+import io.circe.{Decoder, Encoder, Json}
+import io.circe.syntax._
 
 import scala.annotation.nowarn
 import scala.collection.immutable.ListMap
@@ -42,13 +41,6 @@ sealed abstract class QueryParameter(
 }
 
 object QueryParameter {
-
-  final private case class QueryParameterCC private (
-      override val name: Option[String],
-      override val parameterType: QueryParameterType,
-      override val parameterValue: QueryParameterValue
-  ) extends QueryParameter(name, parameterType, parameterValue)
-
   def apply(
       name: Option[String],
       parameterType: QueryParameterType,
@@ -72,10 +64,8 @@ object QueryParameter {
   }
 
   implicit val encoder: Encoder[QueryParameter] =
-    deriveEncoder[QueryParameterCC].contramap[QueryParameter](qp =>
-      QueryParameterCC(qp.name, qp.parameterType, qp.parameterValue)
-    )
-  implicit val decoder: Decoder[QueryParameter] = deriveDecoder[QueryParameterCC].widen
+    Encoder.forProduct3("name", "parameterType", "parameterValue")(x => (x.name, x.parameterType, x.parameterValue))
+  implicit val decoder: Decoder[QueryParameter] = Decoder.forProduct3("name", "parameterType", "parameterValue")(apply)
 }
 
 sealed abstract class QueryParameterValue(
@@ -95,13 +85,6 @@ sealed abstract class QueryParameterValue(
 }
 
 object QueryParameterValue {
-
-  final private case class QueryParameterValueCC private (
-      override val value: Option[String],
-      override val arrayValues: Option[List[QueryParameterValue]],
-      override val structValues: Option[ListMapLike[String, QueryParameterValue]]
-  ) extends QueryParameterValue(value, arrayValues, structValues)
-
   def apply(
       value: Option[String],
       arrayValues: Option[List[QueryParameterValue]],
@@ -120,10 +103,22 @@ object QueryParameterValue {
   }
 
   implicit val encoder: Encoder[QueryParameterValue] =
-    deriveEncoder[QueryParameterValueCC].contramap[QueryParameterValue](qpv =>
-      QueryParameterValueCC(qpv.value, qpv.arrayValues, qpv.structValues)
+    Encoder.instance(x =>
+      Json.obj(
+        "value" := x.value,
+        "arrayValues" := x.arrayValues,
+        "structValues" := x.structValues
+      )
     )
-  implicit val decoder: Decoder[QueryParameterValue] = deriveDecoder[QueryParameterValueCC].widen
+
+  implicit val decoder: Decoder[QueryParameterValue] =
+    Decoder.instance(c =>
+      for {
+        value <- c.get[Option[String]]("value")
+        arrayValues <- c.get[Option[List[QueryParameterValue]]]("arrayValues")
+        structValues <- c.get[Option[ListMapLike[String, QueryParameterValue]]]("structValues")
+      } yield apply(value, arrayValues, structValues)
+    )
 }
 
 sealed abstract class QueryParameterType(
@@ -143,13 +138,6 @@ sealed abstract class QueryParameterType(
 }
 
 object QueryParameterType {
-
-  final private case class QueryParameterTypeCC private (
-      override val `type`: SQLType,
-      override val arrayType: Option[QueryParameterType],
-      override val structTypes: Option[List[StructType]]
-  ) extends QueryParameterType(`type`, arrayType, structTypes)
-
   def apply(
       `type`: SQLType,
       arrayType: Option[QueryParameterType],
@@ -168,10 +156,21 @@ object QueryParameterType {
   }
 
   implicit val encoder: Encoder[QueryParameterType] =
-    deriveEncoder[QueryParameterTypeCC].contramap[QueryParameterType](qpt =>
-      QueryParameterTypeCC(qpt.`type`, qpt.arrayType, qpt.structTypes)
+    Encoder.instance(x =>
+      Json.obj(
+        "type" := x.`type`,
+        "arrayType" := x.arrayType,
+        "structTypes" := x.structTypes
+      )
     )
-  implicit val decoder: Decoder[QueryParameterType] = deriveDecoder[QueryParameterTypeCC].widen
+  implicit val decoder: Decoder[QueryParameterType] =
+    Decoder.instance(c =>
+      for {
+        typ <- c.get[SQLType]("type")
+        arrayType <- c.get[Option[QueryParameterType]]("arrayType")
+        structTypes <- c.get[Option[List[StructType]]]("structTypes")
+      } yield apply(typ, arrayType, structTypes)
+    )
 }
 
 sealed abstract class StructType(val name: Option[String], val `type`: QueryParameterType) {
@@ -182,11 +181,6 @@ sealed abstract class StructType(val name: Option[String], val `type`: QueryPara
 }
 
 object StructType {
-  final private case class StructTypeCC private (
-      override val name: Option[String],
-      override val `type`: QueryParameterType
-  ) extends StructType(name, `type`)
-
   def apply(name: Option[String], `type`: QueryParameterType): StructType = new StructType(name, `type`) {}
 
   implicit val eq: Eq[StructType] = Eq.instance { (x, y) =>
@@ -194,8 +188,8 @@ object StructType {
   }
 
   implicit val encoder: Encoder[StructType] =
-    deriveEncoder[StructTypeCC].contramap[StructType](st => StructTypeCC(st.name, st.`type`))
-  implicit val decoder: Decoder[StructType] = deriveDecoder[StructTypeCC].widen
+    Encoder.forProduct2("name", "type")(x => (x.name, x.`type`))
+  implicit val decoder: Decoder[StructType] = Decoder.forProduct2("name", "type")(apply)
 }
 
 sealed abstract class ListMapLike[A, B] private (val keyValues: List[(A, B)]) {

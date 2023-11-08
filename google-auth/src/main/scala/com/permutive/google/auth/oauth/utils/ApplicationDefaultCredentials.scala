@@ -54,7 +54,7 @@ object ApplicationDefaultCredentials {
     Sync[F].blocking(
       environmentOverrideCredentialsFile.getOrElse(defaultCredentialsFile)
     ) >>= { credentialsFile =>
-      Files[F]
+      Files.forAsync[F]
         .readAll(
           fs2.io.file.Path.fromNioPath(credentialsFile.toPath),
           4096,
